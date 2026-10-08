@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚽ La Liga Dashboard - 7-Tage-Ansicht</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #070f26; color: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        @keyframes pulse-cyan {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .live-dot { animation: pulse-cyan 1.5s infinite; }
+    </style>
+</head>
+<body class="p-4 md:p-8 font-sans min-h-screen">
+
+    <div class="max-w-[95rem] mx-auto space-y-6">
+        
+        <!-- HEADER -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-blue-900/60 pb-4 gap-4">
+            <div>
+                <h1 class="text-3xl font-black text-amber-500 tracking-wide flex items-center gap-2 drop-shadow-sm">
+                    🇪🇸 LA LIGA DASHBOARD
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">Saison 2026/27 • Spiele, Live-Scores & Tabelle via ESPN API</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <div id="live-indicator" class="hidden items-center gap-2 bg-red-950 border border-red-700 text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 live-dot"></span>
+                    LIVE SPIEL LÄUFT (Auto-Update 15s)
+                </div>
+                
+                <!-- Zeitraum / Modus Auswahl -->
+                <div class="flex items-center gap-2 bg-blue-950 border border-blue-800 px-3 py-1.5 rounded-lg shadow-inner">
+                    <span class="text-xs text-blue-300 font-semibold">📅 Zeitraum:</span>
+                    <select id="timeframe-select" onchange="onTimeframeChange()" class="bg-transparent text-amber-400 font-bold text-sm focus:outline-none">
+                        <option value="next7" selected>📅 Nächste 7 Tage</option>
+                        <option value="prev7">⏮️ Vergangene 7 Tage</option>
+                        <option value="single">📆 Einzelnes Datum...</option>
+                    </select>
+                </div>
+
+                <!-- Dynamisches Datumsfeld (erscheint bei "Einzelnes Datum") -->
+                <div id="single-date-wrapper" class="hidden items-center gap-2 bg-blue-950 border border-blue-800 px-3 py-1 rounded-lg shadow-inner">
+                    <input type="date" id="single-date-input" onchange="loadGames()" class="bg-transparent text-amber-400 font-bold text-sm focus:outline-none cursor-pointer">
+                </div>
+
+                <button onclick="refreshAllData()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg shadow transition flex items-center gap-2 border border-blue-400/30">
+                    🔄 Aktualisieren
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB NAVIGATION -->
+        <div class="flex border-b border-blue-900/60 space-x-2">
+            <button id="tab-btn-games" onclick="switchTab('games')" class="px-5 py-2.5 font-bold text-sm rounded-t-xl bg-blue-900/80 text-amber-400 border-t-2 border-amber-400 transition shadow-lg">
+                ⚽ Spielplan & Ergebnisse
+            </button>
+            <button id="tab-btn-standings" onclick="switchTab('standings')" class="px-5 py-2.5 font-bold text-sm rounded-t-xl bg-blue-950/40 text-slate-400 hover:text-white transition">
+                📊 La Liga Tabelle
+            </button>
+        </div>
+
+        <!-- TAB 1: SPIELE & LIVE SCORES -->
+        <div id="tab-content-games" class="space-y-6">
+            <div id="games-container" class="space-y-8">
+                <div class="text-center py-12 text-slate-400 animate-pulse">
+                    ⌛ Lade Spiele von ESPN...
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TABELLE -->
+        <div id="tab-content-standings" class="hidden space-y-8">
+            <div class="bg-blue-950/40 p-6 rounded-2xl border border-blue-900/60 shadow-xl space-y-4 backdrop-blur-sm">
+                <div class="flex justify-between items-center border-b border-blue-900/60 pb-3">
+                    <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">🏆 La Liga Tabelle 2026/27</h2>
+                    <div class="flex items-center gap-4 text-xs font-semibold">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Champions League</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Europa League</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Abstieg</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scroll">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-blue-950 text-blue-300 uppercase text-xs">
+                            <tr>
+                                <th class="px-3 py-3 min-w-[40px]">#</th>
+                                <th class="px-4 py-3 min-w-[200px]">Club</th>
+                                <th class="px-3 py-3 text-center">Sp</th>
+                                <th class="px-3 py-3 text-center">S</th>
+                                <th class="px-3 py-3 text-center">U</th>
+                                <th class="px-3 py-3 text-center">N</th>
+                                <th class="px-3 py-3 text-center">Tore</th>
+                                <th class="px-3 py-3 text-center">Diff</th>
+                                <th class="px-4 py-3 text-center font-bold text-amber-400">Pkt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-blue-900/40">
+                            <tr><td colspan="9" class="px-4 py-6 text-center text-slate-500">Lade Tabelle...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIK -->
+    <script>
+        let leagueEvents = [];
+        let autoRefreshTimer = null;
+
+        function switchTab(tabName) {
+            const tabs = ['games', 'standings'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (t === tabName) {
+                    btn.className = "px-5 py-2.5 font-bold text-sm rounded-t-xl bg-blue-900/80 text-amber-400 border-t-2 border-amber-400 transition shadow-lg";
+                    content.classList.remove("hidden");
+                } else {
+                    btn.className = "px-5 py-2.5 font-bold text-sm rounded-t-xl bg-blue-950/40 text-slate-400 hover:text-white transition";
+                    content.classList.add("hidden");
+                }
+            });
+        }
+
+        function onTimeframeChange() {
+            const mode = document.getElementById("timeframe-select").value;
+            const dateWrapper = document.getElementById("single-date-wrapper");
+
+            if (mode === 'single') {
+                dateWrapper.classList.remove("hidden");
+                dateWrapper.classList.add("flex");
+                if (!document.getElementById("single-date-input").value) {
+                    document.getElementById("single-date-input").value = new Date().toISOString().split('T')[0];
+                }
+            } else {
+                dateWrapper.classList.add("hidden");
+                dateWrapper.classList.remove("flex");
+            }
+            loadGames();
+        }
+
+        async function refreshAllData() {
+            loadGames();
+            await loadStandings();
+        }
+
+        function formatDateKey(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}${m}${d}`;
+        }
+
+        async function loadGames() {
+            const container = document.getElementById("games-container");
+            container.innerHTML = `<div class="text-center py-12 text-slate-400 animate-pulse">⌛ Lade Spieldaten von ESPN...</div>`;
+
+            const mode = document.getElementById("timeframe-select").value;
+            let datesToFetch = [];
+            let baseDate = new Date();
+
+            if (mode === 'next7') {
+                for (let i = 0; i < 7; i++) {
+                    let d = new Date(baseDate);
+                    d.setDate(baseDate.getDate() + i);
+                    datesToFetch.push(formatDateKey(d));
+                }
+            } else if (mode === 'prev7') {
+                for (let i = 6; i >= 0; i--) {
+                    let d = new Date(baseDate);
+                    d.setDate(baseDate.getDate() - i);
+                    datesToFetch.push(formatDateKey(d));
+                }
+            } else if (mode === 'single') {
+                const val = document.getElementById("single-date-input").value;
+                if (val) {
+                    datesToFetch.push(val.replace(/-/g, ''));
+                } else {
+                    datesToFetch.push(formatDateKey(baseDate));
+                }
+            }
+
+            try {
+                const promises = datesToFetch.map(dateStr => 
+                    fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`)
+                        .then(res => res.json())
+                        .then(data => data.events || [])
+                        .catch(() => [])
+                );
+
+                const results = await Promise.all(promises);
+                
+                const eventMap = {};
+                results.flat().forEach(e => {
+                    if (e && e.id) {
+                        eventMap[e.id] = e;
+                    }
+                });
+
+                leagueEvents = Object.values(eventMap);
+                leagueEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                checkLiveState();
+                renderGroupedGames();
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Spieldaten:", error);
+                container.innerHTML = '<div class="text-center py-8 text-rose-400">⚠️ Fehler beim Laden der Spieldaten von ESPN.</div>';
+            }
+        }
+
+        function checkLiveState() {
+            const isLive = leagueEvents.some(e => e.status?.type?.state === "in");
+            const liveIndicator = document.getElementById("live-indicator");
+
+            if (isLive) {
+                liveIndicator.classList.remove("hidden");
+                liveIndicator.classList.add("flex");
+                if (!autoRefreshTimer) {
+                    autoRefreshTimer = setInterval(refreshAllData, 15000);
+                }
+            } else {
+                liveIndicator.classList.add("hidden");
+                liveIndicator.classList.remove("flex");
+                if (autoRefreshTimer) {
+                    clearInterval(autoRefreshTimer);
+                    autoRefreshTimer = null;
+                }
+            }
+        }
+
+        function renderGroupedGames() {
+            const container = document.getElementById("games-container");
+            container.innerHTML = "";
+
+            if (leagueEvents.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-500">Für diesen Zeitraum sind keine Spiele auf ESPN hinterlegt.</div>`;
+                return;
+            }
+
+            const groupedMap = {};
+
+            leagueEvents.forEach(event => {
+                const gameDate = new Date(event.date);
+                const dateKey = gameDate.toLocaleDateString("de-DE", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                if (!groupedMap[dateKey]) {
+                    groupedMap[dateKey] = [];
+                }
+                groupedMap[dateKey].push(event);
+            });
+
+            Object.keys(groupedMap).forEach(dateHeader => {
+                const daySection = document.createElement("div");
+                daySection.className = "space-y-4";
+
+                daySection.innerHTML = `
+                    <div class="flex items-center gap-2 border-b border-blue-900/60 pb-2">
+                        <span class="text-lg font-bold text-amber-400">📅 ${dateHeader}</span>
+                        <span class="text-xs text-slate-400 font-medium">(${groupedMap[dateHeader].length} Spiele)</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="group-${dateHeader.replace(/[^a-zA-Z0-9]/g, '')}"></div>
+                `;
+
+                container.appendChild(daySection);
+                const groupGrid = daySection.querySelector(`#group-${dateHeader.replace(/[^a-zA-Z0-9]/g, '')}`);
+
+                groupedMap[dateHeader].forEach(event => {
+                    const competition = event.competitions?.[0];
+                    const home = competition?.competitors?.find(c => c.homeAway === "home");
+                    const away = competition?.competitors?.find(c => c.homeAway === "away");
+
+                    const status = event.status?.type;
+                    const isLive = status?.state === "in";
+                    const isCompleted = status?.completed;
+
+                    const gameDate = new Date(event.date);
+                    const formattedTimeStr = gameDate.toLocaleTimeString("de-DE", { hour: '2-digit', minute: '2-digit' }) + " Uhr";
+
+                    let statusBadgeClass = "bg-blue-950 text-blue-300 border border-blue-800";
+                    let statusText = `${formattedTimeStr}`;
+
+                    if (isLive) {
+                        statusBadgeClass = "bg-red-950 text-red-300 border border-red-600 live-dot font-bold";
+                        statusText = `🔴 LIVE - ${status?.detail || 'In Progress'}`;
+                    } else if (isCompleted) {
+                        statusBadgeClass = "bg-emerald-950/80 text-emerald-300 border border-emerald-700 font-bold";
+                        statusText = "ENDE";
+                    }
+
+                    const card = document.createElement("div");
+                    card.className = "bg-blue-950/40 p-5 rounded-xl border border-blue-900/60 shadow-lg space-y-4 hover:border-blue-700/60 transition backdrop-blur-sm";
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center border-b border-blue-900/50 pb-2">
+                            <span class="text-blue-400 text-xs font-medium">${formattedTimeStr}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] ${statusBadgeClass}">${statusText}</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <!-- HEIMTEAM -->
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <img src="${home?.team?.logo || ''}" class="w-8 h-8 object-contain filter drop-shadow" alt="Logo">
+                                    <span class="font-bold text-white text-base">${home?.team?.displayName || 'Heimteam'}</span>
+                                </div>
+                                <span class="text-2xl font-black ${home?.winner ? 'text-amber-400' : 'text-slate-200'}">
+                                    ${home?.score !== undefined ? home.score : '-'}
+                                </span>
+                            </div>
+
+                            <!-- AUSWÄRTSTEAM -->
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <img src="${away?.team?.logo || ''}" class="w-8 h-8 object-contain filter drop-shadow" alt="Logo">
+                                    <span class="font-bold text-white text-base">${away?.team?.displayName || 'Auswärtsteam'}</span>
+                                </div>
+                                <span class="text-2xl font-black ${away?.winner ? 'text-amber-400' : 'text-slate-200'}">
+                                    ${away?.score !== undefined ? away.score : '-'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    groupGrid.appendChild(card);
+                });
+            });
+        }
+
+        async function loadStandings() {
+            const url = "https://site.api.espn.com/apis/v2/sports/soccer/esp.1/standings";
+            const tbody = document.getElementById("table-body");
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const entries = data.children?.[0]?.standings?.entries || data.standings?.entries || [];
+                renderTable(entries, tbody);
+
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Tabelle:", error);
+                tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-6 text-center text-rose-400">Fehler beim Laden der Tabelle.</td></tr>';
+            }
+        }
+
+        function renderTable(entries, tbody) {
+            tbody.innerHTML = "";
+
+            if (!entries || entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-6 text-center text-slate-500">Keine Tabellendaten gefunden.</td></tr>';
+                return;
+            }
+
+            entries.forEach((entry, idx) => {
+                const team = entry.team;
+                const stats = entry.stats || [];
+
+                const getStat = (name) => stats.find(s => s.name === name)?.displayValue || "0";
+
+                const rank = idx + 1;
+                const games = getStat("gamesPlayed");
+                const wins = getStat("wins");
+                const draws = getStat("ties");
+                const losses = getStat("losses");
+                const points = getStat("points");
+                const diff = getStat("pointDifferential");
+                const goalsFor = getStat("pointsFor");
+                const goalsAgainst = getStat("pointsAgainst");
+
+                let rankStyle = "text-slate-400 border-l-2 border-transparent";
+                if (rank <= 4) rankStyle = "text-amber-400 font-extrabold border-l-4 border-amber-400 pl-1";
+                else if (rank === 5 || rank === 6) rankStyle = "text-blue-400 font-bold border-l-4 border-blue-500 pl-1";
+                else if (rank >= 18) rankStyle = "text-rose-400 font-bold border-l-4 border-rose-500 pl-1";
+
+                const row = document.createElement("tr");
+                row.className = idx % 2 === 0 ? "bg-blue-950/30 hover:bg-blue-900/50 transition" : "bg-blue-950/10 hover:bg-blue-900/50 transition";
+
+                row.innerHTML = `
+                    <td class="px-3 py-3 ${rankStyle}">${rank}</td>
+                    <td class="px-4 py-3 font-semibold text-white flex items-center gap-3">
+                        <img src="${team?.logos?.[0]?.href || ''}" class="w-6 h-6 object-contain" alt="Logo">
+                        ${team?.displayName || 'Unbekannt'}
+                    </td>
+                    <td class="px-3 py-3 text-center text-slate-300">${games}</td>
+                    <td class="px-3 py-3 text-center text-slate-300">${wins}</td>
+                    <td class="px-3 py-3 text-center text-slate-300">${draws}</td>
+                    <td class="px-3 py-3 text-center text-slate-300">${losses}</td>
+                    <td class="px-3 py-3 text-center text-slate-400">${goalsFor}:${goalsAgainst}</td>
+                    <td class="px-3 py-3 text-center font-medium ${parseInt(diff) > 0 ? 'text-emerald-400' : (parseInt(diff) < 0 ? 'text-rose-400' : 'text-slate-400')}">${diff}</td>
+                    <td class="px-4 py-3 text-center font-black text-amber-400 text-base">${points}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadGames();
+            loadStandings();
+        });
+    </script>
+</body>
+</html>
