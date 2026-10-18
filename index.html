@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Liga — Spanien</title>
     
@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23aa151b%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
     <link rel="apple-touch-icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23aa151b%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
 
-    <!-- Tailwind CSS CDN für moderne Hilfsklassen -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -43,19 +43,19 @@
             background-color: #f85149;
             border-radius: 50%;
             animation: pulse-gold 1.2s infinite;
+            display: inline-block;
         }
 
         .section-box {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 24px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
         }
 
         .section-header {
-            background: linear-gradient(135deg, var(--flag-red) #800e13);
             background-color: var(--flag-red);
             color: #ffffff;
             border: 1px solid rgba(241, 191, 0, 0.3);
@@ -136,27 +136,6 @@
             align-items: center;
             gap: 10px;
         }
-        .team-cell.right { justify-content: flex-end; }
-
-        .matchday-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 0.95rem;
-        }
-
-        .matchday-btn {
-            background: #1a0e10;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .matchday-btn:hover { background: var(--flag-gold); color: #0c0808; border-color: var(--flag-gold); }
 
         /* Modal Styles */
         .modal-overlay {
@@ -173,7 +152,7 @@
         .modal-card {
             background: var(--card-bg);
             border: 2px solid var(--flag-gold);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 20px;
             width: 100%;
             max-width: 650px;
@@ -188,9 +167,6 @@
             flex: 1;
             padding-right: 4px;
         }
-        .modal-body::-webkit-scrollbar { width: 6px; }
-        .modal-body::-webkit-scrollbar-thumb { background: var(--flag-gold); border-radius: 3px; }
-        
         .btn-danger {
             background: transparent;
             border: none;
@@ -204,7 +180,7 @@
             color: #0c0808;
             border: none;
             padding: 10px 18px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
@@ -218,7 +194,7 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen flex justify-center">
 
-    <div class="w-full max-w-[1100px]">
+    <div class="w-full max-w-[1200px]">
         
         <!-- HEADER -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-[#2c1618] pb-4 mb-6 gap-4">
@@ -233,6 +209,59 @@
                 <div id="live-indicator" class="hidden items-center gap-2 bg-red-950 border border-red-700 text-red-300 px-3 py-1.5 rounded-lg text-xs font-bold">
                     <span class="live-dot"></span> LIVE SPIEL LÄUFT (Auto-Update 15s)
                 </div>
+                
+                <!-- Spieltag / Zeitraum Auswahl-Dropdown -->
+                <div class="flex items-center gap-2 bg-[#1a0e10] border border-[#2c1618] px-3 py-1.5 rounded-lg shadow-inner">
+                    <span class="text-xs text-[#f1bf00] font-semibold">📅 Spieltag:</span>
+                    <select id="timeframe-select" onchange="onTimeframeChange()" class="bg-transparent text-white font-bold text-sm focus:outline-none cursor-pointer max-w-[280px]">
+                        <option value="1" style="background:#160d0e;">1. Spieltag (15.08. - 17.08.)</option>
+                        <option value="2" style="background:#160d0e;">2. Spieltag (21.08. - 24.08.)</option>
+                        <option value="3" style="background:#160d0e;">3. Spieltag (28.08. - 31.08.)</option>
+                        <option value="4" style="background:#160d0e;">4. Spieltag (04.09. - 07.09.)</option>
+                        <option value="5" style="background:#160d0e;">5. Spieltag (11.09. - 14.09.)</option>
+                        <option value="6" style="background:#160d0e;">6. Spieltag (18.09. - 21.09.)</option>
+                        <option value="7" style="background:#160d0e;">7. Spieltag (25.09. - 28.09.)</option>
+                        <option value="8" style="background:#160d0e;">8. Spieltag (02.10. - 05.10.)</option>
+                        <option value="9" style="background:#160d0e;" selected>9. Spieltag (16.10. - 19.10.)</option>
+                        <option value="10" style="background:#160d0e;">10. Spieltag (23.10. - 26.10.)</option>
+                        <option value="11" style="background:#160d0e;">11. Spieltag (30.10. - 02.11.)</option>
+                        <option value="12" style="background:#160d0e;">12. Spieltag (06.11. - 09.11.)</option>
+                        <option value="13" style="background:#160d0e;">13. Spieltag (20.11. - 23.11.)</option>
+                        <option value="14" style="background:#160d0e;">14. Spieltag (27.11. - 30.11.)</option>
+                        <option value="15" style="background:#160d0e;">15. Spieltag (04.12. - 07.12.)</option>
+                        <option value="16" style="background:#160d0e;">16. Spieltag (11.12. - 14.12.)</option>
+                        <option value="17" style="background:#160d0e;">17. Spieltag (18.12. - 21.12.)</option>
+                        <option value="18" style="background:#160d0e;">18. Spieltag (03.01. - 04.01.)</option>
+                        <option value="19" style="background:#160d0e;">19. Spieltag (10.01. - 11.01.)</option>
+                        <option value="20" style="background:#160d0e;">20. Spieltag (17.01. - 18.01.)</option>
+                        <option value="21" style="background:#160d0e;">21. Spieltag (24.01. - 25.01.)</option>
+                        <option value="22" style="background:#160d0e;">22. Spieltag (31.01. - 01.02.)</option>
+                        <option value="23" style="background:#160d0e;">23. Spieltag (07.02. - 08.02.)</option>
+                        <option value="24" style="background:#160d0e;">24. Spieltag (14.02. - 15.02.)</option>
+                        <option value="25" style="background:#160d0e;">25. Spieltag (21.02. - 22.02.)</option>
+                        <option value="26" style="background:#160d0e;">26. Spieltag (28.02. - 01.03.)</option>
+                        <option value="27" style="background:#160d0e;">27. Spieltag (07.03. - 08.03.)</option>
+                        <option value="28" style="background:#160d0e;">28. Spieltag (14.03. - 15.03.)</option>
+                        <option value="29" style="background:#160d0e;">29. Spieltag (21.03. - 22.03.)</option>
+                        <option value="30" style="background:#160d0e;">30. Spieltag (04.04. - 05.04.)</option>
+                        <option value="31" style="background:#160d0e;">31. Spieltag (11.04. - 12.04.)</option>
+                        <option value="32" style="background:#160d0e;">32. Spieltag (18.04. - 19.04.)</option>
+                        <option value="33" style="background:#160d0e;">33. Spieltag (21.04. - 22.04.)</option>
+                        <option value="34" style="background:#160d0e;">34. Spieltag (02.05. - 03.05.)</option>
+                        <option value="35" style="background:#160d0e;">35. Spieltag (09.05. - 10.05.)</option>
+                        <option value="36" style="background:#160d0e;">36. Spieltag (16.05. - 17.05.)</option>
+                        <option value="37" style="background:#160d0e;">37. Spieltag (23.05. - 24.05.)</option>
+                        <option value="38" style="background:#160d0e;">38. Spieltag (30.05. - 31.05.)</option>
+                        <option value="all" style="background:#160d0e;">Alle Spieltage</option>
+                        <option value="single" style="background:#160d0e;">📆 Einzelnes Datum...</option>
+                    </select>
+                </div>
+
+                <!-- Dynamisches Datumsfeld für Einzeltage -->
+                <div id="single-date-wrapper" class="hidden items-center gap-2 bg-[#1a0e10] border border-[#2c1618] px-3 py-1 rounded-lg shadow-inner">
+                    <input type="date" id="single-date-input" onchange="loadLaLigaGames()" class="bg-transparent text-[#f1bf00] font-bold text-sm focus:outline-none cursor-pointer">
+                </div>
+
                 <button onclick="refreshAllData()" class="bg-[#aa151b] hover:bg-[#800e13] text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5 border border-[#f1bf00]/30">
                     🔄 Aktualisieren
                 </button>
@@ -242,40 +271,23 @@
         <!-- 1. SEKTION: SPIELTAGS-ERGEBNISSE & TORSCHÜTZEN -->
         <div class="section-box">
             <div class="section-header">
-                <span id="matchdayTableHeader">Spieltag 6 — Spiele & Ergebnisse</span>
+                <span id="matchdayTableHeader">Spieltag 9 — Spiele & Ergebnisse</span>
                 <button class="header-action-btn" onclick="openScorersModal()">⚽ Torschützen</button>
             </div>
 
-            <div class="matchday-controls">
-                <button class="matchday-btn" onclick="changeMatchday(-1)">◀ Vorheriger</button>
-                <strong id="matchdayDisplay" style="color: var(--flag-gold); font-size: 1.1rem;">Spieltag 6</strong>
-                <button class="matchday-btn" onclick="changeMatchday(1)">Nächster ▶</button>
-            </div>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 130px;">Termin</th>
-                            <th style="text-align: right;">Heimmannschaft</th>
-                            <th style="text-align: center; width: 140px;">Ergebnis</th>
-                            <th>Gastmannschaft</th>
-                        </tr>
-                    </thead>
-                    <tbody id="matchdayTableBody">
-                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Lade Spielplan von ESPN...</td></tr>
-                    </tbody>
-                </table>
+            <!-- Grid Layout für die Spiele -->
+            <div id="gamesGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-full text-center py-8 text-slate-400">Lade Spielplan von ESPN...</div>
             </div>
         </div>
 
-        <!-- 2. SEKTION: TABELLE (GESAMT) -->
+        <!-- 2. SEKTION: TABELLE (GESAMT) UNTER DEN SPIELTAGEN -->
         <div class="section-box">
             <div class="section-header">
                 <span>La Liga — Tabelle (Gesamt)</span>
             </div>
             
-            <div class="table-container">
+            <div class="table-container custom-scroll">
                 <table>
                     <thead>
                         <tr>
@@ -309,10 +321,10 @@
     <div class="modal-overlay" id="scorersModal">
         <div class="modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                <div style="font-weight: bold; font-size: 1.1rem; color: #ffffff;">⚽ Torschützenliste — Saisongesamtwertung</div>
+                <div style="font-weight: bold; font-size: 1.1rem; color: #ffffff;" id="scorersModalTitle">⚽ Torschützenliste — Saisongesamtwertung</div>
                 <button class="btn-danger" onclick="closeScorersModal()">✕</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body custom-scroll">
                 <div class="table-container">
                     <table>
                         <thead>
@@ -335,26 +347,70 @@
     <!-- JAVASCRIPT LOGIK -->
     <script>
         let leagueMatches = {};
-        let allSeasonScorers = {};
-        let currentMatchday = 6;
         let autoRefreshTimer = null;
 
-        const MATCHWEEK_START_DATES = {
-            1: "20260814", 2: "20260821", 3: "20260828", 4: "20260911", 5: "20260918",
-            6: "20261009", 7: "20261016", 8: "20261023", 9: "20261030", 10: "20261106",
-            11: "20261113", 12: "20261120", 13: "20261127", 14: "20261204", 15: "20261211",
-            16: "20261218", 17: "20261222", 18: "20261229", 19: "20270108", 20: "20270115",
-            21: "20270122", 22: "20270129", 23: "20270205", 24: "20270212", 25: "20270219",
-            26: "20270226", 27: "20270305", 28: "20270312", 29: "20270319", 30: "20270402",
-            31: "20270409", 32: "20270416", 33: "20270423", 34: "20270430", 35: "20270507",
-            36: "20270512", 37: "20270516", 38: "20270523"
+        const matchdayDateMap = {
+            1: ['20260815', '20260816', '20260817'],
+            2: ['20260821', '20260822', '20260823', '20260824'],
+            3: ['20260828', '20260829', '20260830', '20260831'],
+            4: ['20260904', '20260905', '20260906', '20260907'],
+            5: ['20260911', '20260912', '20260913', '20260914'],
+            6: ['20260918', '20260919', '20260920', '20260921'],
+            7: ['20260925', '20260926', '20260927', '20260928'],
+            8: ['20261002', '20261003', '20261004', '20261005'],
+            9: ['20261016', '20261017', '20261018', '20261019'],
+            10: ['20261023', '20261024', '20261025', '20261026'],
+            11: ['20261030', '20261031', '20261101', '20261102'],
+            12: ['20261106', '20261107', '20261108', '20261109'],
+            13: ['20261120', '20261121', '20261122', '20261123'],
+            14: ['20261127', '20261128', '20261129', '20261130'],
+            15: ['20261204', '20261205', '20261206', '20261207'],
+            16: ['20261211', '20261212', '20261213', '20261214'],
+            17: ['20261218', '20261219', '20261220', '20261221'],
+            18: ['20270103', '20270104'],
+            19: ['20270110', '20270111'],
+            20: ['20270117', '20270118'],
+            21: ['20270124', '20270125'],
+            22: ['20270131', '20270201'],
+            23: ['20270207', '20270208'],
+            24: ['20270214', '20270215'],
+            25: ['20270221', '20270222'],
+            26: ['20270228', '20270301'],
+            27: ['20270307', '20270308'],
+            28: ['20270314', '20270315'],
+            29: ['20270321', '20270322'],
+            30: ['20270404', '20270405'],
+            31: ['20270411', '20270412'],
+            32: ['20270418', '20270419'],
+            33: ['20270421', '20270422'],
+            34: ['20270502', '20270503'],
+            35: ['20270509', '20270510'],
+            36: ['20270516', '20270517'],
+            37: ['20270523', '20270524'],
+            38: ['20270530', '20270531']
         };
 
-        function parseEspnDate(dateStr) {
-            const y = parseInt(dateStr.substring(0, 4));
-            const m = parseInt(dateStr.substring(4, 6)) - 1;
-            const d = parseInt(dateStr.substring(6, 8));
-            return new Date(y, m, d);
+        function onTimeframeChange() {
+            const mode = document.getElementById("timeframe-select").value;
+            const dateWrapper = document.getElementById("single-date-wrapper");
+
+            if (mode === 'single') {
+                dateWrapper.classList.remove("hidden");
+                dateWrapper.classList.add("flex");
+                if (!document.getElementById("single-date-input").value) {
+                    document.getElementById("single-date-input").value = new Date().toISOString().split('T')[0];
+                }
+            } else {
+                dateWrapper.classList.add("hidden");
+                dateWrapper.classList.remove("flex");
+            }
+            loadLaLigaGames();
+        }
+
+        async function refreshAllData() {
+            const mode = document.getElementById("timeframe-select").value;
+            await loadGamesForMode(mode);
+            await loadStandings();
         }
 
         function formatDateKey(dateObj) {
@@ -364,30 +420,44 @@
             return `${y}${m}${d}`;
         }
 
-        async function refreshAllData() {
-            await loadAllMatchdays();
-            await loadStandings();
+        async function loadLaLigaGames() {
+            const mode = document.getElementById("timeframe-select").value;
+            await loadGamesForMode(mode);
         }
 
-        function changeMatchday(amount) {
-            currentMatchday = Math.max(1, Math.min(38, currentMatchday + amount));
-            renderAll();
-        }
+        async function loadGamesForMode(mode) {
+            const container = document.getElementById("gamesGridContainer");
+            container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 animate-pulse">⌛ Lade La Liga Spiele von ESPN...</div>`;
 
-        async function loadAllMatchdays() {
-            const startBaseStr = MATCHWEEK_START_DATES[currentMatchday] || "20261009";
-            const startDateObj = parseEspnDate(startBaseStr);
+            let datesToFetch = [];
 
-            const datesToFetch = [];
-            for (let i = 0; i < 5; i++) {
-                const d = new Date(startDateObj);
-                d.setDate(startDateObj.getDate() + i);
-                datesToFetch.push(formatDateKey(d));
+            if (mode === 'single') {
+                const val = document.getElementById("single-date-input").value;
+                if (val) {
+                    datesToFetch.push(val.replace(/-/g, ''));
+                } else {
+                    datesToFetch.push(formatDateKey(new Date()));
+                }
+            } else if (mode === 'all') {
+                let start = new Date(2026, 7, 1);
+                let end = new Date(2027, 5, 30);
+                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 7)) {
+                    datesToFetch.push(formatDateKey(d));
+                }
+            } else {
+                datesToFetch = matchdayDateMap[parseInt(mode)] || [];
             }
 
             try {
-                const promises = datesToFetch.map(dateStr => 
-                    fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`)
+                let fetchUrls = [];
+                if (mode === 'all') {
+                    fetchUrls = [`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard`];
+                } else {
+                    fetchUrls = datesToFetch.map(dateStr => `https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`);
+                }
+
+                const promises = fetchUrls.map(url => 
+                    fetch(url)
                         .then(res => res.json())
                         .then(data => data.events || [])
                         .catch(() => [])
@@ -395,8 +465,12 @@
 
                 const results = await Promise.all(promises);
                 let events = results.flat();
+                
+                const eventMap = {};
+                events.forEach(e => { if (e && e.id) eventMap[e.id] = e; });
+                events = Object.values(eventMap);
 
-                leagueMatches[currentMatchday] = [];
+                leagueMatches[mode] = [];
                 let hasLive = false;
 
                 events.forEach(ev => {
@@ -412,13 +486,16 @@
                     if (isLive) hasLive = true;
 
                     let matchDateObj = new Date(ev.date);
-                    let dateStr = ev.date ? ev.date.split('T')[0] : "";
+                    let dateStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "";
                     let timeStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : "21:00";
 
-                    let goalsHome = [];
-                    let goalsAway = [];
+                    let goals = [];
+                    let runningHome = 0;
+                    let runningAway = 0;
 
                     if (comp.details && Array.isArray(comp.details)) {
+                        comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
+                        
                         comp.details.forEach(detail => {
                             if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
                                 let playerName = detail.scorer?.athlete?.displayName 
@@ -430,25 +507,32 @@
                                     let cleanText = detail.text.replace(/scored.*\$/, '').trim();
                                     if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
                                 }
-                                if (!playerName) playerName = detail.team?.displayName || "Tor";
 
+                                const scoringTeamId = detail.team?.id;
+                                const isHomeGoal = (scoringTeamId === homeComp.team.id);
+                                const isAwayGoal = (scoringTeamId === awayComp.team.id);
+
+                                if (isHomeGoal) runningHome++;
+                                if (isAwayGoal) runningAway++;
+
+                                if (!playerName) playerName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
+
+                                let teamName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
                                 let clock = detail.clock?.displayValue || "";
+                                if (clock && !clock.endsWith("'")) clock += "'";
+
                                 let notes = "";
                                 if (detail.penalty) notes = " (Pen)";
                                 if (detail.ownGoal) notes = " (ET)";
 
-                                let goalEntry = clock ? `${playerName} (${clock}')` + notes : playerName;
-
-                                if (detail.team?.id === homeComp.team.id) {
-                                    goalsHome.push(`⚽ ${goalEntry}`);
-                                } else if (detail.team?.id === awayComp.team.id) {
-                                    goalsAway.push(`⚽ ${goalEntry}`);
-                                }
+                                goals.push({
+                                    text: `[${runningHome}:${runningAway}] ${teamName}: ${playerName} (${clock})${notes}`
+                                });
                             }
                         });
                     }
 
-                    leagueMatches[currentMatchday].push({
+                    leagueMatches[mode].push({
                         home: homeComp.team.displayName,
                         away: awayComp.team.displayName,
                         homeLogo: homeComp.team.logo || '',
@@ -460,12 +544,11 @@
                         isFinished: statusType === 'post',
                         isLive: isLive,
                         dateTime: ev.date,
-                        goalsHome: goalsHome,
-                        goalsAway: goalsAway
+                        goals: goals
                     });
                 });
 
-                leagueMatches[currentMatchday].sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
+                leagueMatches[mode].sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
 
                 let liveIndicator = document.getElementById('live-indicator');
                 if (hasLive) {
@@ -477,119 +560,82 @@
                     liveIndicator.classList.remove('flex');
                 }
 
-            } catch (e) {
-                console.error("Fehler beim Laden der Spieldaten:", e);
-            }
+                renderMatchdayGrid(mode);
 
-            renderMatchdayTable();
-            loadFullSeasonScorersInBackground();
-        }
-
-        async function loadFullSeasonScorersInBackground() {
-            allSeasonScorers = {};
-            for (let s = 1; s <= currentMatchday; s++) {
-                let baseStr = MATCHWEEK_START_DATES[s];
-                if (!baseStr) continue;
-                let dObj = parseEspnDate(baseStr);
-                
-                for (let i = 0; i < 5; i++) {
-                    let d = new Date(dObj);
-                    d.setDate(dObj.getDate() + i);
-                    let dateStr = formatDateKey(d);
-                    
-                    try {
-                        let res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`);
-                        let data = await res.json();
-                        let events = data.events || [];
-                        
-                        events.forEach(ev => {
-                            let comp = ev.competitions?.[0];
-                            if (!comp || !comp.details) return;
-                            let homeComp = comp.competitors.find(c => c.homeAway === 'home');
-                            let awayComp = comp.competitors.find(c => c.homeAway === 'away');
-                            
-                            comp.details.forEach(detail => {
-                                if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
-                                    let playerName = detail.scorer?.athlete?.displayName 
-                                        || detail.athlete?.displayName 
-                                        || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName)
-                                        || "";
-                                    if (!playerName && detail.text) {
-                                        let cleanText = detail.text.replace(/scored.*\$/, '').trim();
-                                        if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
-                                    }
-                                    if (!playerName) playerName = detail.team?.displayName || "Tor";
-
-                                    let teamName = "";
-                                    let teamLogo = "";
-                                    if (homeComp && detail.team?.id === homeComp.team.id) {
-                                        teamName = homeComp.team.displayName;
-                                        teamLogo = homeComp.team.logo;
-                                    } else if (awayComp && detail.team?.id === awayComp.team.id) {
-                                        teamName = awayComp.team.displayName;
-                                        teamLogo = awayComp.team.logo;
-                                    }
-
-                                    if (playerName && teamName) {
-                                        if (!allSeasonScorers[playerName]) {
-                                            allSeasonScorers[playerName] = { count: 0, team: teamName, logo: teamLogo };
-                                        }
-                                        allSeasonScorers[playerName].count++;
-                                    }
-                                }
-                            });
-                        });
-                    } catch (err) {}
-                }
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Spieldaten:", error);
+                container.innerHTML = '<div class="col-span-full text-center py-8 text-rose-400">⚠️ Fehler beim Laden der Spieldaten.</div>';
             }
         }
 
-        function getTeamHtml(teamName, logoUrl, alignRight = false, goals = []) {
-            let logoHtml = logoUrl ? `<img src="${logoUrl}" alt="${teamName}" class="team-mini-logo">` : '';
-            let goalsHtml = '';
-            if (goals && goals.length > 0) {
-                let alignmentStyle = alignRight ? 'text-align: right;' : 'text-align: left;';
-                let indentStyle = alignRight ? 'padding-right: 34px;' : 'padding-left: 34px;';
-                goalsHtml = `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3; ${alignmentStyle} ${indentStyle}">${goals.join('<br>')}</div>`;
-            }
-
-            if (alignRight) {
-                return `<div style="display: flex; flex-direction: column;"><div class="team-cell right"><span>${teamName}</span>${logoHtml}</div>${goalsHtml}</div>`;
-            } else {
-                return `<div style="display: flex; flex-direction: column;"><div class="team-cell">${logoHtml}<span>${teamName}</span></div>${goalsHtml}</div>`;
-            }
-        }
-
-        function renderMatchdayTable() {
-            let tbody = document.getElementById('matchdayTableBody');
-            tbody.innerHTML = '';
-            let matches = leagueMatches[currentMatchday] || [];
+        function renderMatchdayGrid(mode) {
+            let container = document.getElementById('gamesGridContainer');
+            container.innerHTML = '';
+            let matches = leagueMatches[mode] || [];
 
             if (matches.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Keine Spiele für Spieltag ${currentMatchday} gefunden.</td></tr>`;
+                container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400">Keine Spiele für diesen Spieltag / Zeitraum gefunden.</div>`;
                 return;
             }
 
             matches.forEach(m => {
-                let hasResult = m.homeScore !== undefined && m.homeScore !== null && m.awayScore !== undefined && m.awayScore !== null;
-                let formattedDate = m.date ? m.date.split('-').reverse().join('.') : '-';
-                let timeStr = m.time ? ` ${m.time} Uhr` : '';
-
-                let resultDisplay = hasResult ? `<strong>${m.homeScore}:${m.awayScore}</strong>` : `<span style="color: var(--text-muted); font-style: italic;">vs</span>`;
+                let hasResult = m.homeScore !== null && m.awayScore !== null;
+                
+                let statusBadge = `<span style="background: rgba(44,22,24,0.8); color: #f1bf00; border: 1px solid rgba(241,191,0,0.3); padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold;">ENDE</span>`;
                 if (m.isLive) {
-                    resultDisplay += `<div style="font-size: 0.65rem; color: #f85149; font-weight: bold; margin-top: 2px;">🔴 LIVE</div>`;
-                } else if (m.isFinished) {
-                    resultDisplay += `<div style="font-size: 0.65rem; color: #3fb950; margin-top: 2px;">(Endstand)</div>`;
+                    statusBadge = `<span style="background: rgba(170,21,27,0.8); color: #f87171; border: 1px solid rgba(248,113,113,0.4); padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold;" class="live-dot">🔴 LIVE</span>`;
+                } else if (!hasResult && !m.isFinished) {
+                    statusBadge = `<span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${m.time || '21:00'} UHR</span>`;
                 }
 
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-size: 0.8rem; color: var(--text-muted); vertical-align: top;">${formattedDate}<br>${timeStr}</td>
-                    <td style="text-align: right; vertical-align: top;">${getTeamHtml(m.home, m.homeLogo, true, m.goalsHome)}</td>
-                    <td style="text-align: center; vertical-align: middle;">${resultDisplay}</td>
-                    <td style="text-align: left; vertical-align: top;">${getTeamHtml(m.away, m.awayLogo, false, m.goalsAway)}</td>
+                let homeScoreStr = hasResult ? m.homeScore : '-';
+                let awayScoreStr = hasResult ? m.awayScore : '-';
+
+                let goalsHtml = '';
+                if (m.goals && m.goals.length > 0) {
+                    let items = m.goals.map(g => `<div style="font-size: 0.78rem; color: var(--flag-gold); margin-top: 3px; display: flex; align-items: center; gap: 5px;"><span>⚽</span> <span>${g.text}</span></div>`).join('');
+                    goalsHtml = `
+                        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(44,22,24,0.8); display: flex; flex-direction: column; gap: 2px;">
+                            ${items}
+                        </div>
+                    `;
+                }
+
+                let card = document.createElement('div');
+                card.className = "bg-[#12090a] border border-[#2c1618] rounded-2xl p-4 flex flex-col justify-between gap-3 shadow-lg hover:border-[#4a2529] transition";
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${m.date || ''} — ${m.time || ''} UHR</span>
+                        ${statusBadge}
+                    </div>
+
+                    <div class="space-y-2">
+                        <!-- Heimteam -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(22,13,14,0.6); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(44,22,24,0.8);">
+                            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                                <img src="${m.homeLogo}" class="team-mini-logo" alt="Logo">
+                                <span class="font-bold text-white text-sm truncate" style="color: var(--flag-gold);">${m.home}</span>
+                            </div>
+                            <span style="background: #0c0808; border: 1px solid var(--border-color); color: white; font-weight: 900; padding: 4px 12px; border-radius: 8px; font-size: 1.1rem; min-width: 40px; text-align: center;">
+                                ${homeScoreStr}
+                            </span>
+                        </div>
+
+                        <!-- Gastteam -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(22,13,14,0.6); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(44,22,24,0.8);">
+                            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                                <img src="${m.awayLogo}" class="team-mini-logo" alt="Logo">
+                                <span class="font-bold text-white text-sm truncate" style="color: #cbd5e1;">${m.away}</span>
+                            </div>
+                            <span style="background: #0c0808; border: 1px solid var(--border-color); color: white; font-weight: 900; padding: 4px 12px; border-radius: 8px; font-size: 1.1rem; min-width: 40px; text-align: center;">
+                                ${awayScoreStr}
+                            </span>
+                        </div>
+                    </div>
+                    ${goalsHtml}
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(card);
             });
         }
 
@@ -652,31 +698,118 @@
             });
         }
 
-        function openScorersModal() {
+        async function openScorersModal() {
             let tbody = document.getElementById('scorersModalBody');
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade Torschützenliste...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade alle Tore der bisherigen Spieltage...</td></tr>`;
             document.getElementById('scorersModal').style.display = 'flex';
 
-            let scorersArray = Object.keys(allSeasonScorers).map(name => ({
+            let selectedMode = document.getElementById("timeframe-select").value;
+            let maxMw = selectedMode === 'all' ? 38 : (parseInt(selectedMode) || 9);
+
+            let fetchPromises = [];
+            for (let mw = 1; mw <= maxMw; mw++) {
+                if (matchdayDateMap[mw]) {
+                    let dates = matchdayDateMap[mw];
+                    let subPromises = dates.map(dateStr => 
+                        fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`)
+                            .then(res => res.json())
+                            .then(data => data.events || [])
+                            .catch(() => [])
+                    );
+
+                    fetchPromises.push(
+                        Promise.all(subPromises).then(results => {
+                            let events = results.flat();
+                            let matches = [];
+                            events.forEach(ev => {
+                                const comp = ev.competitions?.[0];
+                                if (!comp) return;
+                                const homeComp = comp.competitors.find(c => c.homeAway === 'home');
+                                const awayComp = comp.competitors.find(c => c.homeAway === 'away');
+                                if (!homeComp || !awayComp) return;
+
+                                let goals = [];
+                                if (comp.details && Array.isArray(comp.details)) {
+                                    comp.details.forEach(detail => {
+                                        if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
+                                            let playerName = detail.scorer?.athlete?.displayName 
+                                                || detail.athlete?.displayName 
+                                                || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName)
+                                                || "";
+                                            if (!playerName && detail.text) {
+                                                let cleanText = detail.text.replace(/scored.*\$/, '').trim();
+                                                if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
+                                            }
+                                            if (!playerName) playerName = detail.team?.displayName || "Tor";
+
+                                            let teamName = detail.team?.id === homeComp.team.id ? homeComp.team.displayName : awayComp.team.displayName;
+                                            let teamLogo = detail.team?.logo || (detail.team?.id === homeComp.team.id ? homeComp.team.logo : awayComp.team.logo);
+                                            let clock = detail.clock?.displayValue || "";
+                                            if (clock && !clock.endsWith("'")) clock += "'";
+
+                                            let notes = "";
+                                            if (detail.penalty) notes = " (Pen)";
+                                            if (detail.ownGoal) notes = " (ET)";
+
+                                            goals.push({
+                                                playerName: playerName,
+                                                team: teamName,
+                                                logo: teamLogo,
+                                                info: `${clock}${notes}`
+                                            });
+                                        }
+                                    });
+                                }
+                                matches.push({ goals: goals });
+                            });
+                            return matches;
+                        })
+                    );
+                }
+            }
+
+            let allResults = await Promise.all(fetchPromises);
+            let aggregatedScorers = {};
+
+            allResults.flat().forEach(m => {
+                if (m.goals) {
+                    m.goals.forEach(g => {
+                        let name = g.playerName;
+                        if (name && name.toLowerCase() !== 'tor') {
+                            if (!aggregatedScorers[name]) {
+                                aggregatedScorers[name] = { count: 0, team: g.team, logo: g.logo, details: [] };
+                            }
+                            aggregatedScorers[name].count++;
+                            if (g.info) aggregatedScorers[name].details.push(g.info);
+                        }
+                    });
+                }
+            });
+
+            let scorersArray = Object.keys(aggregatedScorers).map(name => ({
                 name: name,
-                goals: allSeasonScorers[name].count,
-                team: allSeasonScorers[name].team,
-                logo: allSeasonScorers[name].logo
+                goals: aggregatedScorers[name].count,
+                team: aggregatedScorers[name].team,
+                logo: aggregatedScorers[name].logo,
+                details: aggregatedScorers[name].details
             }));
 
             tbody.innerHTML = '';
             if (scorersArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Noch keine Torschützen in dieser Saison erfasst.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Noch keine Torschützen erfasst.</td></tr>`;
             } else {
                 scorersArray.sort((a, b) => b.goals - a.goals);
                 scorersArray.forEach((s, idx) => {
                     let tr = document.createElement('tr');
                     let logoHtml = s.logo ? `<img src="${s.logo}" alt="${s.team}" style="width: 16px; height: 16px; object-fit: contain; vertical-align: middle; margin-right: 6px;">` : '';
+                    let detailsHtml = s.details.length > 0 ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Minuten: ${s.details.join(', ')}</div>` : '';
+
                     tr.innerHTML = `
                         <td style="text-align: center; font-weight: bold; color: var(--flag-gold);">${idx + 1}.</td>
                         <td>
                             <div style="font-weight: bold; color: #ffffff;">${s.name}</div>
                             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center;">${logoHtml}<span>${s.team}</span></div>
+                            ${detailsHtml}
                         </td>
                         <td style="text-align: center; font-weight: bold; color: var(--flag-gold); font-size: 1.1rem;">${s.goals}</td>
                     `;
@@ -693,14 +826,8 @@
             if (e.target === document.getElementById('scorersModal')) closeScorersModal();
         }
 
-        function renderAll() {
-            document.getElementById('matchdayDisplay').textContent = "Spieltag " + currentMatchday;
-            document.getElementById('matchdayTableHeader').textContent = `Spieltag ${currentMatchday} — Spiele & Ergebnisse`;
-            loadAllMatchdays();
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
-            renderAll();
+            loadLaLigaGames();
             loadStandings();
         });
     </script>
