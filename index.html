@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FC Barcelona — La Liga</title>
     
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Perfektes Inline-SVG Icon für den Homescreen -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23004d98%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
     <link rel="apple-touch-icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23004d98%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
@@ -319,7 +322,7 @@
             </div>
         </div>
 
-        <!-- WEITERE INFO-BOXEN (TOP 3 TORSCHÜTZEN ERSETZT BARÇA-LEGENDEN) -->
+        <!-- WEITERE INFO-BOXEN -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="section-box !mb-0">
                 <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">🏟️ Heim vs. Auswärts</div>
@@ -359,7 +362,7 @@
             <div class="section-header">
                 <span id="matchdayTableHeader">Spieltag — Spiele & Ergebnisse</span>
                 <div class="flex gap-2">
-                    <button class="header-action-btn" onclick="alert('Push-Alarm aktiv!')">🔔 Push-Alarm</button>
+                    <button class="header-action-btn" onclick="subscribePushNotifications()">🔔 Push-Alarm aktivieren</button>
                     <button onclick="refreshAllData()" class="header-action-btn">🔄 Aktualisieren</button>
                 </div>
             </div>
@@ -492,6 +495,12 @@
 
     <!-- JAVASCRIPT LOGIK -->
     <script>
+        const SUPABASE_URL = 'https://lhusylpjnujlqomougmg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxodXN5bHBqbnVqbHFvbW91Z21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMzA0ODIsImV4cCI6MjEwNDYwNjQ4Mn0.9ugazAA5pEdy9uSaJQWa5BMb7EwSH9d-h5K8ln_PF5A';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nwh8Jw';
+
         let currentMatchday = 1;
         let leagueMatches = {};
         let allStandingsEntries = [];
@@ -551,6 +560,69 @@
             37: { label: "37. Spieltag (23.05. - 24.05.)", dates: ['20270523', '20270524'] },
             38: { label: "38. Spieltag (30.05. - 31.05.)", dates: ['20270530', '20270531'] }
         };
+
+        // Service Worker Registrierung & Push-Anmeldung (Tabelle: push_subscriptions_barcelona)
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    console.log('Service Worker erfolgreich registriert:', registration);
+                } catch (error) {
+                    console.error('Service Worker Registrierung fehlgeschlagen:', error);
+                }
+            }
+        }
+
+        async function subscribePushNotifications() {
+            if (!('serviceWorker' in navigator)) {
+                alert('Dein Browser unterstützt keine Service Worker.');
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    alert('Benachrichtigungen wurden nicht erlaubt.');
+                    return;
+                }
+
+                const registration = await navigator.serviceWorker.ready;
+                let subscription = await registration.pushManager.getSubscription();
+
+                if (!subscription) {
+                    const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedKey
+                    });
+                }
+
+                const subJson = subscription.toJSON();
+                const { error } = await supabaseClient
+                    .from('push_subscriptions_barcelona')
+                    .upsert({
+                        endpoint: subJson.endpoint,
+                        keys: subJson.keys
+                    }, { onConflict: 'endpoint' });
+
+                if (error) throw error;
+                alert('🔔 Push-Benachrichtigungen für Barcelona erfolgreich aktiviert!');
+            } catch (err) {
+                console.error('Push-Abo Fehler:', err);
+                alert('Fehler beim Aktivieren der Push-Benachrichtigungen.');
+            }
+        }
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
 
         function determineCurrentMatchday() {
             let today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -1043,7 +1115,6 @@
             `;
         }
 
-        // Modal für Alle Barça Spiele öffnen
         function openBarcaMatchesModal() {
             let tbody = document.getElementById('barcaMatchesModalBody');
             tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade Barça-Spiele...</td></tr>`;
@@ -1133,6 +1204,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
+            await registerServiceWorker();
             currentMatchday = determineCurrentMatchday();
             initDropdown();
             await loadStandings();
