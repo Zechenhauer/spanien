@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Liga — Spanien</title>
+    <title>FC Barcelona — La Liga</title>
     
     <!-- Perfektes Inline-SVG Icon für den Homescreen -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23aa151b%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
-    <link rel="apple-touch-icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23aa151b%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23004d98%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
+    <link rel="apple-touch-icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23004d98%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,11 +15,14 @@
         :root {
             --bg-color: #0c0808;
             --card-bg: #160d0e;
+            --card-inner: #12090a;
             --text-color: #f1f5f9;
             --text-muted: #94a3b8;
+            --goal-muted: #948b78;
             --border-color: #2c1618;
-            --flag-red: #aa151b;
-            --flag-gold: #f1bf00;
+            --barca-blue: #004d98;
+            --barca-red: #a50044;
+            --barca-gold: #edbb00;
         }
 
         body {
@@ -56,10 +59,10 @@
         }
 
         .section-header {
-            background-color: var(--flag-red);
+            background-color: var(--barca-red);
             color: #ffffff;
-            border: 1px solid rgba(241, 191, 0, 0.3);
-            border-left: 5px solid var(--flag-gold);
+            border: 1px solid rgba(237, 187, 0, 0.3);
+            border-left: 5px solid var(--barca-gold);
             padding: 12px 18px;
             font-weight: bold;
             text-transform: uppercase;
@@ -72,13 +75,13 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            box-shadow: 0 2px 10px rgba(170, 21, 27, 0.4);
+            box-shadow: 0 2px 10px rgba(165, 0, 68, 0.4);
         }
 
         .header-action-btn {
-            background: rgba(241, 191, 0, 0.2);
-            border: 1px solid var(--flag-gold);
-            color: var(--flag-gold);
+            background: rgba(237, 187, 0, 0.2);
+            border: 1px solid var(--barca-gold);
+            color: var(--barca-gold);
             padding: 5px 12px;
             border-radius: 6px;
             cursor: pointer;
@@ -87,7 +90,30 @@
             transition: all 0.2s;
             text-transform: uppercase;
         }
-        .header-action-btn:hover { background: var(--flag-gold); color: #0c0808; }
+        .header-action-btn:hover { background: var(--barca-gold); color: #0c0808; }
+
+        .stat-card {
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .form-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            color: white;
+        }
+        .form-win { background-color: #238636; }
+        .form-draw { background-color: #8b949e; }
+        .form-loss { background-color: #da3633; }
 
         .table-container {
             width: 100%;
@@ -98,43 +124,58 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
         th {
-            background-color: #12090a;
+            background-color: var(--card-inner);
             color: var(--text-muted);
-            padding: 12px 10px;
+            padding: 12px 14px;
             text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             letter-spacing: 0.5px;
             white-space: nowrap;
             border-bottom: 2px solid var(--border-color);
         }
 
         td {
-            padding: 12px 10px;
+            padding: 14px;
             vertical-align: middle;
             border-bottom: 1px solid rgba(44, 22, 24, 0.5);
         }
 
-        tr:hover { background-color: rgba(241, 191, 0, 0.03); }
+        tr:hover { background-color: rgba(237, 187, 0, 0.03); }
 
-        tr.cl-zone td { background: rgba(241, 191, 0, 0.08); border-top: 1px solid rgba(241, 191, 0, 0.2); border-bottom: 1px solid rgba(241, 191, 0, 0.2); }
-        tr.el-zone td { background: rgba(51, 133, 255, 0.1); border-top: 1px solid rgba(51, 133, 255, 0.2); border-bottom: 1px solid rgba(51, 133, 255, 0.2); }
-        tr.relegation-zone td { background: rgba(170, 21, 27, 0.15); border-top: 1px solid rgba(170, 21, 27, 0.25); border-bottom: 1px solid rgba(170, 21, 27, 0.25); }
+        tr.cl-zone td { background: rgba(0, 77, 152, 0.15); border-top: 1px solid rgba(0, 77, 152, 0.3); border-bottom: 1px solid rgba(0, 77, 152, 0.3); }
+        tr.el-zone td { background: rgba(237, 187, 0, 0.1); border-top: 1px solid rgba(237, 187, 0, 0.25); border-bottom: 1px solid rgba(237, 187, 0, 0.25); }
+        tr.relegation-zone td { background: rgba(165, 0, 68, 0.2); border-top: 1px solid rgba(165, 0, 68, 0.35); border-bottom: 1px solid rgba(165, 0, 68, 0.35); }
+        tr.barca-row td { background: rgba(0, 77, 152, 0.25) !important; font-weight: bold; }
 
         .team-mini-logo {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             object-fit: contain;
             flex-shrink: 0;
         }
 
-        .team-cell {
+        .team-cell-home {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            justify-content: flex-end;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .team-cell-away {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: flex-start;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: left;
         }
 
         /* Modal Styles */
@@ -151,15 +192,15 @@
         }
         .modal-card {
             background: var(--card-bg);
-            border: 2px solid var(--flag-gold);
+            border: 2px solid var(--barca-gold);
             border-radius: 16px;
             padding: 20px;
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             max-height: 85vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 30px rgba(241, 191, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(237, 187, 0, 0.2);
         }
         .modal-body {
             overflow-y: auto;
@@ -176,7 +217,7 @@
             font-size: 1.1rem;
         }
         .btn-modal-close {
-            background: var(--flag-gold);
+            background: var(--barca-gold);
             color: #0c0808;
             border: none;
             padding: 10px 18px;
@@ -194,94 +235,170 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen flex justify-center">
 
-    <div class="w-full max-w-[1200px]">
+    <div class="w-full max-w-[950px]">
         
-        <!-- HEADER -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-[#2c1618] pb-4 mb-6 gap-4">
-            <div>
-                <h1 class="text-2xl font-black tracking-wide flex items-center gap-2" style="color: var(--flag-gold);">
-                    🇪🇸 LA LIGA <span style="color: var(--flag-red); text-shadow: 0 1px 2px rgba(0,0,0,0.5);">ESPAÑA</span>
+        <!-- HEADER MIT WAPPEN -->
+        <div class="flex flex-col items-center border-b border-[#2c1618] pb-5 mb-6 text-center gap-2">
+            <div class="flex items-center gap-3">
+                <img id="barcaHeaderLogo" src="https://a.espncdn.com/i/teamlogos/soccer/500/83.png" alt="FC Barcelona" class="w-12 h-12 object-contain drop-shadow">
+                <h1 class="text-2xl md:text-3xl font-black tracking-wide flex items-center gap-2" style="color: var(--barca-gold);">
+                    FC BARCELONA
                 </h1>
-                <p class="text-slate-400 text-xs mt-1">Saison 2026/27 • Live-Ergebnisse & Tabelle via ESPN API</p>
+                <img id="barcaHeaderLogo2" src="https://a.espncdn.com/i/teamlogos/soccer/500/83.png" alt="FC Barcelona" class="w-12 h-12 object-contain drop-shadow">
             </div>
-            
-            <div class="flex flex-wrap items-center gap-3">
-                <div id="live-indicator" class="hidden items-center gap-2 bg-red-950 border border-red-700 text-red-300 px-3 py-1.5 rounded-lg text-xs font-bold">
-                    <span class="live-dot"></span> LIVE SPIEL LÄUFT (Auto-Update 15s)
+            <p class="text-slate-300 text-xs font-semibold">La Liga — Saison 2026/27 (Live-Sync via ESPN)</p>
+            <div class="flex items-center gap-3 mt-1">
+                <span class="text-xs text-slate-400">⚡ Web-App & Management: Jürgen Schützendorf</span>
+                <div id="live-indicator" class="hidden items-center gap-2 bg-red-950 border border-red-700 text-red-300 px-3 py-1 rounded-full text-xs font-bold">
+                    <span class="live-dot"></span> ⚡ ESPN Live-Ticker Aktiv
                 </div>
-                
-                <!-- Spieltag / Zeitraum Auswahl-Dropdown -->
-                <div class="flex items-center gap-2 bg-[#1a0e10] border border-[#2c1618] px-3 py-1.5 rounded-lg shadow-inner">
-                    <span class="text-xs text-[#f1bf00] font-semibold">📅 Spieltag:</span>
-                    <select id="timeframe-select" onchange="onTimeframeChange()" class="bg-transparent text-white font-bold text-sm focus:outline-none cursor-pointer max-w-[280px]">
-                        <option value="1" style="background:#160d0e;">1. Spieltag (15.08. - 17.08.)</option>
-                        <option value="2" style="background:#160d0e;">2. Spieltag (21.08. - 24.08.)</option>
-                        <option value="3" style="background:#160d0e;">3. Spieltag (28.08. - 31.08.)</option>
-                        <option value="4" style="background:#160d0e;">4. Spieltag (04.09. - 07.09.)</option>
-                        <option value="5" style="background:#160d0e;">5. Spieltag (11.09. - 14.09.)</option>
-                        <option value="6" style="background:#160d0e;">6. Spieltag (18.09. - 21.09.)</option>
-                        <option value="7" style="background:#160d0e;">7. Spieltag (25.09. - 28.09.)</option>
-                        <option value="8" style="background:#160d0e;">8. Spieltag (02.10. - 05.10.)</option>
-                        <option value="9" style="background:#160d0e;" selected>9. Spieltag (16.10. - 19.10.)</option>
-                        <option value="10" style="background:#160d0e;">10. Spieltag (23.10. - 26.10.)</option>
-                        <option value="11" style="background:#160d0e;">11. Spieltag (30.10. - 02.11.)</option>
-                        <option value="12" style="background:#160d0e;">12. Spieltag (06.11. - 09.11.)</option>
-                        <option value="13" style="background:#160d0e;">13. Spieltag (20.11. - 23.11.)</option>
-                        <option value="14" style="background:#160d0e;">14. Spieltag (27.11. - 30.11.)</option>
-                        <option value="15" style="background:#160d0e;">15. Spieltag (04.12. - 07.12.)</option>
-                        <option value="16" style="background:#160d0e;">16. Spieltag (11.12. - 14.12.)</option>
-                        <option value="17" style="background:#160d0e;">17. Spieltag (18.12. - 21.12.)</option>
-                        <option value="18" style="background:#160d0e;">18. Spieltag (03.01. - 04.01.)</option>
-                        <option value="19" style="background:#160d0e;">19. Spieltag (10.01. - 11.01.)</option>
-                        <option value="20" style="background:#160d0e;">20. Spieltag (17.01. - 18.01.)</option>
-                        <option value="21" style="background:#160d0e;">21. Spieltag (24.01. - 25.01.)</option>
-                        <option value="22" style="background:#160d0e;">22. Spieltag (31.01. - 01.02.)</option>
-                        <option value="23" style="background:#160d0e;">23. Spieltag (07.02. - 08.02.)</option>
-                        <option value="24" style="background:#160d0e;">24. Spieltag (14.02. - 15.02.)</option>
-                        <option value="25" style="background:#160d0e;">25. Spieltag (21.02. - 22.02.)</option>
-                        <option value="26" style="background:#160d0e;">26. Spieltag (28.02. - 01.03.)</option>
-                        <option value="27" style="background:#160d0e;">27. Spieltag (07.03. - 08.03.)</option>
-                        <option value="28" style="background:#160d0e;">28. Spieltag (14.03. - 15.03.)</option>
-                        <option value="29" style="background:#160d0e;">29. Spieltag (21.03. - 22.03.)</option>
-                        <option value="30" style="background:#160d0e;">30. Spieltag (04.04. - 05.04.)</option>
-                        <option value="31" style="background:#160d0e;">31. Spieltag (11.04. - 12.04.)</option>
-                        <option value="32" style="background:#160d0e;">32. Spieltag (18.04. - 19.04.)</option>
-                        <option value="33" style="background:#160d0e;">33. Spieltag (21.04. - 22.04.)</option>
-                        <option value="34" style="background:#160d0e;">34. Spieltag (02.05. - 03.05.)</option>
-                        <option value="35" style="background:#160d0e;">35. Spieltag (09.05. - 10.05.)</option>
-                        <option value="36" style="background:#160d0e;">36. Spieltag (16.05. - 17.05.)</option>
-                        <option value="37" style="background:#160d0e;">37. Spieltag (23.05. - 24.05.)</option>
-                        <option value="38" style="background:#160d0e;">38. Spieltag (30.05. - 31.05.)</option>
-                        <option value="all" style="background:#160d0e;">Alle Spieltage</option>
-                        <option value="single" style="background:#160d0e;">📆 Einzelnes Datum...</option>
-                    </select>
-                </div>
-
-                <!-- Dynamisches Datumsfeld für Einzeltage -->
-                <div id="single-date-wrapper" class="hidden items-center gap-2 bg-[#1a0e10] border border-[#2c1618] px-3 py-1 rounded-lg shadow-inner">
-                    <input type="date" id="single-date-input" onchange="loadLaLigaGames()" class="bg-transparent text-[#f1bf00] font-bold text-sm focus:outline-none cursor-pointer">
-                </div>
-
-                <button onclick="refreshAllData()" class="bg-[#aa151b] hover:bg-[#800e13] text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5 border border-[#f1bf00]/30">
-                    🔄 Aktualisieren
-                </button>
             </div>
         </div>
 
-        <!-- 1. SEKTION: SPIELTAGS-ERGEBNISSE & TORSCHÜTZEN -->
+        <!-- SEKTION 1: FC BARCELONA — SAISON-AUSWERTUNG -->
         <div class="section-box">
             <div class="section-header">
-                <span id="matchdayTableHeader">Spieltag 9 — Spiele & Ergebnisse</span>
-                <button class="header-action-btn" onclick="openScorersModal()">⚽ Torschützen</button>
+                <span>FC BARCELONA — SAISON-AUSWERTUNG</span>
+                <div class="flex gap-2 flex-wrap">
+                    <button class="header-action-btn" onclick="openScorersModal()">⚽ La Liga Torschützen</button>
+                    <button class="header-action-btn" onclick="openBarcaMatchesModal()">📅 Alle Barça Spiele</button>
+                    <button class="header-action-btn bg-red-900 border-red-500 text-white" onclick="jumpToLiveMatchday()">🔴 Live-Spiele</button>
+                </div>
             </div>
 
-            <!-- Grid Layout für die Spiele -->
-            <div id="gamesGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="col-span-full text-center py-8 text-slate-400">Lade Spielplan von ESPN...</div>
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+                <div class="stat-card">
+                    <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Spiele</div>
+                    <div id="stat-games" class="text-xl font-black text-white mt-1">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Siege</div>
+                    <div id="stat-wins" class="text-xl font-black text-emerald-400 mt-1">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Remis</div>
+                    <div id="stat-draws" class="text-xl font-black text-slate-300 mt-1">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Niederlagen</div>
+                    <div id="stat-losses" class="text-xl font-black text-rose-500 mt-1">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Tore</div>
+                    <div id="stat-goals" class="text-xl font-black text-white mt-1">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Punkte</div>
+                    <div id="stat-points" class="text-xl font-black" style="color: var(--barca-gold);">-</div>
+                </div>
+            </div>
+
+            <!-- Formverlauf -->
+            <div class="bg-[#12090a] border border-[#2c1618] rounded-xl p-3.5">
+                <div class="text-[0.75rem] text-slate-400 font-bold uppercase tracking-wider mb-2">Formverlauf (letzte Spiele):</div>
+                <div id="form-badges-container" class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs text-slate-500">Lade Formkurve...</span>
+                </div>
             </div>
         </div>
 
-        <!-- 2. SEKTION: TABELLE (GESAMT) UNTER DEN SPIELTAGEN -->
+        <!-- 2-SPALTIGES KOMPAKTES INFO-GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="section-box !mb-0 flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">⏳ Nächstes Spiel</div>
+                    <div id="next-match-content" class="text-sm text-slate-300">Suche anstehendes Spiel...</div>
+                </div>
+            </div>
+            <div class="section-box !mb-0 flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">📋 Letztes Pflichtspiel</div>
+                    <div id="last-match-content" class="text-sm text-slate-300">Lade letztes Ergebnis...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WEITERE INFO-BOXEN (TOP 3 TORSCHÜTZEN ERSETZT BARÇA-LEGENDEN) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="section-box !mb-0">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">🏟️ Heim vs. Auswärts</div>
+                <div id="home-away-stats" class="text-sm space-y-2 text-slate-300">
+                    <div>Heim: Lade...</div>
+                    <div>Auswärts: Lade...</div>
+                </div>
+            </div>
+            <div class="section-box !mb-0">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex justify-between items-center">
+                    <span>⚽ Top 3 Torschützen (Liga)</span>
+                    <span class="text-[10px] text-[var(--barca-gold)] cursor-pointer hover:underline" onclick="openScorersModal()">Alle ➔</span>
+                </div>
+                <div id="top3-scorers-container" class="space-y-1.5 text-xs">
+                    <div class="bg-[#12090a] px-3 py-2 rounded-lg border border-[#2c1618] text-slate-400 text-center">Lade Torschützen...</div>
+                </div>
+            </div>
+            <div class="section-box !mb-0 flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex justify-between items-center">
+                        <span>📜 Barça-Historie</span>
+                        <span class="text-[10px] text-[var(--barca-gold)] cursor-pointer hover:underline" onclick="rotateHistoryFact()">Nächster Fakt ➔</span>
+                    </div>
+                    <div id="history-fact" class="text-xs text-slate-300 italic mb-4 min-h-[40px]">
+                        "Der FC Barcelona wurde am 29. November 1899 von Hans Gamper gegründet."
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <a href="https://www.fcbarcelona.com" target="_blank" class="flex-1 text-center bg-[#004d98] hover:bg-[#003366] text-white text-xs font-bold py-2 rounded-lg transition border border-[#edbb00]/30">FCB.com</a>
+                    <a href="https://store.fcbarcelona.com" target="_blank" class="flex-1 text-center bg-[#a50044] hover:bg-[#800033] text-white text-xs font-bold py-2 rounded-lg transition border border-[#edbb00]/30">Shop</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEKTION 2: SPIELTAGS-ERGEBNISSE -->
+        <div class="section-box">
+            <div class="section-header">
+                <span id="matchdayTableHeader">Spieltag — Spiele & Ergebnisse</span>
+                <div class="flex gap-2">
+                    <button class="header-action-btn" onclick="alert('Push-Alarm aktiv!')">🔔 Push-Alarm</button>
+                    <button onclick="refreshAllData()" class="header-action-btn">🔄 Aktualisieren</button>
+                </div>
+            </div>
+
+            <!-- Spieltags-Navigation -->
+            <div class="flex justify-between items-center bg-[#12090a] border border-[#2c1618] rounded-xl p-3 mb-4">
+                <button onclick="changeMatchday(-1)" class="bg-[#160d0e] hover:bg-[#2c1618] text-[var(--barca-gold)] border border-[#2c1618] text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1">
+                    ◀ Vorheriger
+                </button>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 font-semibold">Spieltag:</span>
+                    <select id="matchday-select" onchange="onMatchdayDropdownChange()" class="bg-[#160d0e] text-white font-bold text-sm border border-[#2c1618] px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer max-w-[300px]">
+                        <!-- Wird per JS befüllt -->
+                    </select>
+                </div>
+                <button onclick="changeMatchday(1)" class="bg-[#160d0e] hover:bg-[#2c1618] text-[var(--barca-gold)] border border-[#2c1618] text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1">
+                    Nächster ▶
+                </button>
+            </div>
+
+            <!-- Tabellen-Ansicht für alle Spiele des Spieltags -->
+            <div class="table-container custom-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;">Termin</th>
+                            <th style="text-align: right;">Heimmannschaft</th>
+                            <th style="text-align: center; width: 140px;">Ergebnis / Status</th>
+                            <th style="text-align: left;">Gastmannschaft</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gamesTableBody">
+                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Lade Spielplan von ESPN...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SEKTION 3: TABELLE (GESAMT) -->
         <div class="section-box">
             <div class="section-header">
                 <span>La Liga — Tabelle (Gesamt)</span>
@@ -309,9 +426,9 @@
             </div>
 
             <div style="display: flex; gap: 15px; margin-top: 12px; font-size: 0.75rem; color: var(--text-muted); flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: rgba(241, 191, 0, 0.6); border-radius: 2px;"></span> Champions League (1. - 4.)</div>
-                <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: rgba(51, 133, 255, 0.5); border-radius: 2px;"></span> Europa League (5. - 6.)</div>
-                <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: rgba(170, 21, 27, 0.6); border-radius: 2px;"></span> Abstieg (18. - 20.)</div>
+                <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: rgba(0, 77, 152, 0.6); border-radius: 2px;"></span> Champions League (1. - 4.)</div>
+                <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: rgba(237, 187, 0, 0.5); border-radius: 2px;"></span> Europa League (5. - 6.)</div>
+                <div style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; background: rgba(165, 0, 68, 0.6); border-radius: 2px;"></span> Abstieg (18. - 20.)</div>
             </div>
         </div>
 
@@ -321,7 +438,7 @@
     <div class="modal-overlay" id="scorersModal">
         <div class="modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                <div style="font-weight: bold; font-size: 1.1rem; color: #ffffff;" id="scorersModalTitle">⚽ Torschützenliste — Saisongesamtwertung</div>
+                <div style="font-weight: bold; font-size: 1.1rem; color: #ffffff;">⚽ Torschützenliste — Saisongesamtwertung</div>
                 <button class="btn-danger" onclick="closeScorersModal()">✕</button>
             </div>
             <div class="modal-body custom-scroll">
@@ -344,298 +461,359 @@
         </div>
     </div>
 
+    <!-- ALLE BARÇA SPIELE MODAL -->
+    <div class="modal-overlay" id="barcaMatchesModal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <div style="font-weight: bold; font-size: 1.1rem; color: var(--barca-gold);">📅 FC Barcelona — Alle Saisonspiele</div>
+                <button class="btn-danger" onclick="closeBarcaMatchesModal()">✕</button>
+            </div>
+            <div class="modal-body custom-scroll">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">ST</th>
+                                <th style="width: 130px;">Termin</th>
+                                <th style="text-align: right;">Heim</th>
+                                <th style="text-align: center; width: 80px;">Ergebnis</th>
+                                <th style="text-align: left;">Gast</th>
+                            </tr>
+                        </thead>
+                        <tbody id="barcaMatchesModalBody">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade Barça-Spiele...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <button class="btn-modal-close" onclick="closeBarcaMatchesModal()">Schließen</button>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIK -->
     <script>
+        let currentMatchday = 1;
         let leagueMatches = {};
+        let allStandingsEntries = [];
         let autoRefreshTimer = null;
 
-        const matchdayDateMap = {
-            1: ['20260815', '20260816', '20260817'],
-            2: ['20260821', '20260822', '20260823', '20260824'],
-            3: ['20260828', '20260829', '20260830', '20260831'],
-            4: ['20260904', '20260905', '20260906', '20260907'],
-            5: ['20260911', '20260912', '20260913', '20260914'],
-            6: ['20260918', '20260919', '20260920', '20260921'],
-            7: ['20260925', '20260926', '20260927', '20260928'],
-            8: ['20261002', '20261003', '20261004', '20261005'],
-            9: ['20261016', '20261017', '20261018', '20261019'],
-            10: ['20261023', '20261024', '20261025', '20261026'],
-            11: ['20261030', '20261031', '20261101', '20261102'],
-            12: ['20261106', '20261107', '20261108', '20261109'],
-            13: ['20261120', '20261121', '20261122', '20261123'],
-            14: ['20261127', '20261128', '20261129', '20261130'],
-            15: ['20261204', '20261205', '20261206', '20261207'],
-            16: ['20261211', '20261212', '20261213', '20261214'],
-            17: ['20261218', '20261219', '20261220', '20261221'],
-            18: ['20270103', '20270104'],
-            19: ['20270110', '20270111'],
-            20: ['20270117', '20270118'],
-            21: ['20270124', '20270125'],
-            22: ['20270131', '20270201'],
-            23: ['20270207', '20270208'],
-            24: ['20270214', '20270215'],
-            25: ['20270221', '20270222'],
-            26: ['20270228', '20270301'],
-            27: ['20270307', '20270308'],
-            28: ['20270314', '20270315'],
-            29: ['20270321', '20270322'],
-            30: ['20270404', '20270405'],
-            31: ['20270411', '20270412'],
-            32: ['20270418', '20270419'],
-            33: ['20270421', '20270422'],
-            34: ['20270502', '20270503'],
-            35: ['20270509', '20270510'],
-            36: ['20270516', '20270517'],
-            37: ['20270523', '20270524'],
-            38: ['20270530', '20270531']
+        const historyFacts = [
+            "Der FC Barcelona wurde am 29. November 1899 von Hans Gamper gegründet.",
+            "Das berühmte Motto des Vereins lautet 'Més que un club' (Mehr als ein Club).",
+            "Barça ist einer von drei Vereinen in Spanien, die seit Gründung der Liga 1929 nie aus der Primera División abgestiegen sind.",
+            "Das Camp Nou ist mit über 99.000 Plätzen das größte Fußballstadion Europas.",
+            "In der historischen Saison 2008/09 gewann Barça unter Pep Guardiola als erster spanischer Club das historische Triple (Meisterschaft, Pokal, Champions League)."
+        ];
+        let currentFactIdx = 0;
+
+        function rotateHistoryFact() {
+            currentFactIdx = (currentFactIdx + 1) % historyFacts.length;
+            document.getElementById('history-fact').innerText = `"${historyFacts[currentFactIdx]}"`;
+        }
+
+        const matchdayDefinitions = {
+            1: { label: "1. Spieltag (15.08. - 27.08.)", dates: ['20260815', '20260816', '20260817', '20260819', '20260825', '20260826', '20260827'] },
+            2: { label: "2. Spieltag (20.08. - 27.08.)", dates: ['20260820', '20260821', '20260822', '20260823', '20260824', '20260825', '20260826', '20260827'] },
+            3: { label: "3. Spieltag (28.08. - 31.08.)", dates: ['20260828', '20260829', '20260830', '20260831'] },
+            4: { label: "4. Spieltag (03.09. - 07.09.)", dates: ['20260903', '20260904', '20260905', '20260906', '20260907'] },
+            5: { label: "5. Spieltag (11.09. - 14.09.)", dates: ['20260911', '20260912', '20260913', '20260914'] },
+            6: { label: "6. Spieltag (03.09. - 17.09.)", dates: ['20260903', '20260915', '20260916', '20260917'] },
+            7: { label: "7. Spieltag (18.09. - 20.09.)", dates: ['20260918', '20260919', '20260920'] },
+            8: { label: "8. Spieltag (09.10. - 12.10.)", dates: ['20261009', '20261010', '20261011', '20261012'] },
+            9: { label: "9. Spieltag (16.10. - 21.10.)", dates: ['20261016', '20261017', '20261018', '20261019', '20261021'] },
+            10: { label: "10. Spieltag (23.10. - 26.10.)", dates: ['20261023', '20261024', '20261025', '20261026'] },
+            11: { label: "11. Spieltag (30.10. - 02.11.)", dates: ['20261030', '20261031', '20261101', '20261102'] },
+            12: { label: "12. Spieltag (06.11. - 09.11.)", dates: ['20261106', '20261107', '20261108', '20261109'] },
+            13: { label: "13. Spieltag (20.11. - 23.11.)", dates: ['20261120', '20261121', '20261122', '20261123'] },
+            14: { label: "14. Spieltag (27.11. - 30.11.)", dates: ['20261127', '20261128', '20261129', '20261130'] },
+            15: { label: "15. Spieltag (04.12. - 07.12.)", dates: ['20261204', '20261205', '20261206', '20261207'] },
+            16: { label: "16. Spieltag (11.12. - 14.12.)", dates: ['20261211', '20261212', '20261213', '20261214'] },
+            17: { label: "17. Spieltag (18.12. - 21.12.)", dates: ['20261218', '20261219', '20261220', '20261221'] },
+            18: { label: "18. Spieltag (03.01. - 04.01.)", dates: ['20270103', '20270104'] },
+            19: { label: "19. Spieltag (10.01. - 11.01.)", dates: ['20270110', '20270111'] },
+            20: { label: "20. Spieltag (17.01. - 18.01.)", dates: ['20270117', '20270118'] },
+            21: { label: "21. Spieltag (24.01. - 25.01.)", dates: ['20270124', '20270125'] },
+            22: { label: "22. Spieltag (31.01. - 01.02.)", dates: ['20270131', '20270201'] },
+            23: { label: "23. Spieltag (07.02. - 08.02.)", dates: ['20270207', '20270208'] },
+            24: { label: "24. Spieltag (14.02. - 15.02.)", dates: ['20270214', '20270215'] },
+            25: { label: "25. Spieltag (21.02. - 22.02.)", dates: ['20270221', '20270222'] },
+            26: { label: "26. Spieltag (28.02. - 01.03.)", dates: ['20270228', '20270301'] },
+            27: { label: "27. Spieltag (07.03. - 08.03.)", dates: ['20270307', '20270308'] },
+            28: { label: "28. Spieltag (14.03. - 15.03.)", dates: ['20270314', '20270315'] },
+            29: { label: "29. Spieltag (21.03. - 22.03.)", dates: ['20270321', '20270322'] },
+            30: { label: "30. Spieltag (04.04. - 05.04.)", dates: ['20270404', '20270405'] },
+            31: { label: "31. Spieltag (11.04. - 12.04.)", dates: ['20270411', '20270412'] },
+            32: { label: "32. Spieltag (18.04. - 19.04.)", dates: ['20270418', '20270419'] },
+            33: { label: "33. Spieltag (21.04. - 22.04.)", dates: ['20270421', '20270422'] },
+            34: { label: "34. Spieltag (02.05. - 03.05.)", dates: ['20270502', '20270503'] },
+            35: { label: "35. Spieltag (09.05. - 10.05.)", dates: ['20270509', '20270510'] },
+            36: { label: "36. Spieltag (16.05. - 17.05.)", dates: ['20270516', '20270517'] },
+            37: { label: "37. Spieltag (23.05. - 24.05.)", dates: ['20270523', '20270524'] },
+            38: { label: "38. Spieltag (30.05. - 31.05.)", dates: ['20270530', '20270531'] }
         };
 
-        function onTimeframeChange() {
-            const mode = document.getElementById("timeframe-select").value;
-            const dateWrapper = document.getElementById("single-date-wrapper");
+        function determineCurrentMatchday() {
+            let today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            let bestMatchday = 1;
+            let minDiff = Infinity;
 
-            if (mode === 'single') {
-                dateWrapper.classList.remove("hidden");
-                dateWrapper.classList.add("flex");
-                if (!document.getElementById("single-date-input").value) {
-                    document.getElementById("single-date-input").value = new Date().toISOString().split('T')[0];
+            for (let mw = 1; mw <= 38; mw++) {
+                let def = matchdayDefinitions[mw];
+                if (def && def.dates) {
+                    for (let dStr of def.dates) {
+                        let diff = Math.abs(parseInt(today) - parseInt(dStr));
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            bestMatchday = mw;
+                        }
+                    }
                 }
-            } else {
-                dateWrapper.classList.add("hidden");
-                dateWrapper.classList.remove("flex");
             }
-            loadLaLigaGames();
+            return bestMatchday;
+        }
+
+        function initDropdown() {
+            let select = document.getElementById('matchday-select');
+            select.innerHTML = '';
+            for (let i = 1; i <= 38; i++) {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = matchdayDefinitions[i].label;
+                if (i === currentMatchday) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        function onMatchdayDropdownChange() {
+            currentMatchday = parseInt(document.getElementById('matchday-select').value);
+            loadGamesForMatchday(currentMatchday);
+        }
+
+        function changeMatchday(direction) {
+            currentMatchday += direction;
+            if (currentMatchday < 1) currentMatchday = 1;
+            if (currentMatchday > 38) currentMatchday = 38;
+            document.getElementById('matchday-select').value = currentMatchday;
+            loadGamesForMatchday(currentMatchday);
+        }
+
+        function jumpToLiveMatchday() {
+            for (let mw = 1; mw <= 38; mw++) {
+                let matches = leagueMatches[mw] || [];
+                let hasLive = matches.some(m => m.isLive);
+                if (hasLive) {
+                    currentMatchday = mw;
+                    document.getElementById('matchday-select').value = currentMatchday;
+                    loadGamesForMatchday(currentMatchday);
+                    return;
+                }
+            }
+            alert("Aktuell finden keine Live-Spiele statt.");
         }
 
         async function refreshAllData() {
-            const mode = document.getElementById("timeframe-select").value;
-            await loadGamesForMode(mode);
             await loadStandings();
+            await loadAllMatchdays();
+            loadGamesForMatchday(currentMatchday);
         }
 
-        function formatDateKey(dateObj) {
-            const y = dateObj.getFullYear();
-            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const d = String(dateObj.getDate()).padStart(2, '0');
-            return `${y}${m}${d}`;
-        }
+        async function loadAllMatchdays() {
+            let fetchPromises = [];
+            for (let mw = 1; mw <= 38; mw++) {
+                let def = matchdayDefinitions[mw];
+                if (def && def.dates) {
+                    let subPromises = def.dates.map(dateStr => 
+                        fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`)
+                            .then(res => res.json())
+                            .then(data => data.events || [])
+                            .catch(() => [])
+                    );
+                    fetchPromises.push(
+                        Promise.all(subPromises).then(results => {
+                            let events = results.flat();
+                            let matches = [];
+                            let hasLive = false;
 
-        async function loadLaLigaGames() {
-            const mode = document.getElementById("timeframe-select").value;
-            await loadGamesForMode(mode);
-        }
+                            events.forEach(ev => {
+                                const comp = ev.competitions?.[0];
+                                if (!comp) return;
+                                const homeComp = comp.competitors.find(c => c.homeAway === 'home');
+                                const awayComp = comp.competitors.find(c => c.homeAway === 'away');
+                                if (!homeComp || !awayComp) return;
 
-        async function loadGamesForMode(mode) {
-            const container = document.getElementById("gamesGridContainer");
-            container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 animate-pulse">⌛ Lade La Liga Spiele von ESPN...</div>`;
+                                const statusType = ev.status.type.state;
+                                const isLive = statusType === 'in';
+                                if (isLive) hasLive = true;
 
-            let datesToFetch = [];
+                                let matchDateObj = new Date(ev.date);
+                                let dateStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "";
+                                let timeStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : "21:00";
 
-            if (mode === 'single') {
-                const val = document.getElementById("single-date-input").value;
-                if (val) {
-                    datesToFetch.push(val.replace(/-/g, ''));
-                } else {
-                    datesToFetch.push(formatDateKey(new Date()));
-                }
-            } else if (mode === 'all') {
-                let start = new Date(2026, 7, 1);
-                let end = new Date(2027, 5, 30);
-                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 7)) {
-                    datesToFetch.push(formatDateKey(d));
-                }
-            } else {
-                datesToFetch = matchdayDateMap[parseInt(mode)] || [];
-            }
+                                let goals = [];
+                                let runningHome = 0;
+                                let runningAway = 0;
 
-            try {
-                let fetchUrls = [];
-                if (mode === 'all') {
-                    fetchUrls = [`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard`];
-                } else {
-                    fetchUrls = datesToFetch.map(dateStr => `https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`);
-                }
+                                if (comp.details && Array.isArray(comp.details)) {
+                                    comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
+                                    comp.details.forEach(detail => {
+                                        if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
+                                            let playerName = detail.scorer?.athlete?.displayName 
+                                                || detail.athlete?.displayName 
+                                                || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName)
+                                                || "";
+                                            if (!playerName && detail.text) {
+                                                let cleanText = detail.text.replace(/scored.*\$/, '').trim();
+                                                if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
+                                            }
 
-                const promises = fetchUrls.map(url => 
-                    fetch(url)
-                        .then(res => res.json())
-                        .then(data => data.events || [])
-                        .catch(() => [])
-                );
+                                            const scoringTeamId = detail.team?.id;
+                                            const isHomeGoal = (scoringTeamId === homeComp.team.id);
+                                            const isAwayGoal = (scoringTeamId === awayComp.team.id);
 
-                const results = await Promise.all(promises);
-                let events = results.flat();
-                
-                const eventMap = {};
-                events.forEach(e => { if (e && e.id) eventMap[e.id] = e; });
-                events = Object.values(eventMap);
+                                            if (isHomeGoal) runningHome++;
+                                            if (isAwayGoal) runningAway++;
 
-                leagueMatches[mode] = [];
-                let hasLive = false;
+                                            if (!playerName) playerName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
 
-                events.forEach(ev => {
-                    const comp = ev.competitions?.[0];
-                    if (!comp) return;
+                                            let teamName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
+                                            let teamLogo = detail.team?.logo || (isHomeGoal ? homeComp.team.logo : awayComp.team.logo);
+                                            let clock = detail.clock?.displayValue || "";
+                                            if (clock && !clock.endsWith("'")) clock += "'";
 
-                    const homeComp = comp.competitors.find(c => c.homeAway === 'home');
-                    const awayComp = comp.competitors.find(c => c.homeAway === 'away');
-                    if (!homeComp || !awayComp) return;
+                                            let notes = "";
+                                            if (detail.penalty) notes = " (Pen)";
+                                            if (detail.ownGoal) notes = " (ET)";
 
-                    const statusType = ev.status.type.state;
-                    const isLive = statusType === 'in';
-                    if (isLive) hasLive = true;
-
-                    let matchDateObj = new Date(ev.date);
-                    let dateStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "";
-                    let timeStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : "21:00";
-
-                    let goals = [];
-                    let runningHome = 0;
-                    let runningAway = 0;
-
-                    if (comp.details && Array.isArray(comp.details)) {
-                        comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
-                        
-                        comp.details.forEach(detail => {
-                            if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
-                                let playerName = detail.scorer?.athlete?.displayName 
-                                    || detail.athlete?.displayName 
-                                    || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName)
-                                    || "";
-
-                                if (!playerName && detail.text) {
-                                    let cleanText = detail.text.replace(/scored.*\$/, '').trim();
-                                    if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
+                                            goals.push({
+                                                text: `[${runningHome}:${runningAway}] ${playerName} (${clock})${notes}`,
+                                                playerName: playerName,
+                                                team: teamName,
+                                                logo: teamLogo,
+                                                minute: clock,
+                                                isHome: isHomeGoal
+                                            });
+                                        }
+                                    });
                                 }
 
-                                const scoringTeamId = detail.team?.id;
-                                const isHomeGoal = (scoringTeamId === homeComp.team.id);
-                                const isAwayGoal = (scoringTeamId === awayComp.team.id);
-
-                                if (isHomeGoal) runningHome++;
-                                if (isAwayGoal) runningAway++;
-
-                                if (!playerName) playerName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
-
-                                let teamName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
-                                let clock = detail.clock?.displayValue || "";
-                                if (clock && !clock.endsWith("'")) clock += "'";
-
-                                let notes = "";
-                                if (detail.penalty) notes = " (Pen)";
-                                if (detail.ownGoal) notes = " (ET)";
-
-                                goals.push({
-                                    text: `[${runningHome}:${runningAway}] ${teamName}: ${playerName} (${clock})${notes}`
+                                matches.push({
+                                    home: homeComp.team.displayName,
+                                    away: awayComp.team.displayName,
+                                    homeLogo: homeComp.team.logo || '',
+                                    awayLogo: awayComp.team.logo || '',
+                                    date: dateStr,
+                                    time: timeStr,
+                                    homeScore: homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null,
+                                    awayScore: awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null,
+                                    isFinished: statusType === 'post',
+                                    isLive: isLive,
+                                    dateTime: ev.date,
+                                    goals: goals
                                 });
-                            }
-                        });
-                    }
+                            });
 
-                    leagueMatches[mode].push({
-                        home: homeComp.team.displayName,
-                        away: awayComp.team.displayName,
-                        homeLogo: homeComp.team.logo || '',
-                        awayLogo: awayComp.team.logo || '',
-                        date: dateStr,
-                        time: timeStr,
-                        homeScore: homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null,
-                        awayScore: awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null,
-                        isFinished: statusType === 'post',
-                        isLive: isLive,
-                        dateTime: ev.date,
-                        goals: goals
-                    });
-                });
-
-                leagueMatches[mode].sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
-
-                let liveIndicator = document.getElementById('live-indicator');
-                if (hasLive) {
-                    liveIndicator.classList.remove('hidden');
-                    liveIndicator.classList.add('flex');
-                    if (!autoRefreshTimer) autoRefreshTimer = setInterval(refreshAllData, 15000);
-                } else {
-                    liveIndicator.classList.add('hidden');
-                    liveIndicator.classList.remove('flex');
+                            let uniqueMatches = [];
+                            let seen = new Set();
+                            matches.forEach(m => {
+                                let key = `${m.home}-${m.away}-${m.dateTime}`;
+                                if (!seen.has(key)) {
+                                    seen.add(key);
+                                    uniqueMatches.push(m);
+                                }
+                            });
+                            uniqueMatches.sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
+                            return { mw: mw, matches: uniqueMatches, hasLive: hasLive };
+                        })
+                    );
                 }
-
-                renderMatchdayGrid(mode);
-
-            } catch (error) {
-                console.error("Fehler beim Abrufen der Spieldaten:", error);
-                container.innerHTML = '<div class="col-span-full text-center py-8 text-rose-400">⚠️ Fehler beim Laden der Spieldaten.</div>';
             }
+
+            let results = await Promise.all(fetchPromises);
+            let anyLive = false;
+            leagueMatches = {};
+            results.forEach(res => {
+                leagueMatches[res.mw] = res.matches;
+                if (res.hasLive) anyLive = true;
+            });
+
+            let liveIndicator = document.getElementById('live-indicator');
+            if (anyLive) {
+                liveIndicator.classList.remove('hidden');
+                liveIndicator.classList.add('flex');
+                if (!autoRefreshTimer) autoRefreshTimer = setInterval(refreshAllData, 15000);
+            } else {
+                liveIndicator.classList.add('hidden');
+                liveIndicator.classList.remove('flex');
+            }
+
+            updateBarcaDashboard();
+            updateTop3ScorersWidget();
+            loadGamesForMatchday(currentMatchday);
         }
 
-        function renderMatchdayGrid(mode) {
-            let container = document.getElementById('gamesGridContainer');
-            container.innerHTML = '';
-            let matches = leagueMatches[mode] || [];
+        function loadGamesForMatchday(mw) {
+            document.getElementById('matchdayTableHeader').innerText = matchdayDefinitions[mw]?.label.split(' (')[0] + ' — Spiele & Ergebnisse';
+            let tbody = document.getElementById('gamesTableBody');
+            tbody.innerHTML = '';
 
+            let matches = leagueMatches[mw] || [];
             if (matches.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400">Keine Spiele für diesen Spieltag / Zeitraum gefunden.</div>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Keine Spiele für diesen Spieltag gefunden.</td></tr>`;
                 return;
             }
 
             matches.forEach(m => {
                 let hasResult = m.homeScore !== null && m.awayScore !== null;
                 
-                let statusBadge = `<span style="background: rgba(44,22,24,0.8); color: #f1bf00; border: 1px solid rgba(241,191,0,0.3); padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold;">ENDE</span>`;
+                let statusBadge = `<span style="background: rgba(44,22,24,0.8); color: var(--barca-gold); border: 1px solid rgba(237,187,0,0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">[Endstand]</span>`;
                 if (m.isLive) {
-                    statusBadge = `<span style="background: rgba(170,21,27,0.8); color: #f87171; border: 1px solid rgba(248,113,113,0.4); padding: 3px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold;" class="live-dot">🔴 LIVE</span>`;
+                    statusBadge = `<span style="background: rgba(165,0,68,0.8); color: #f87171; border: 1px solid rgba(248,113,113,0.4); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;" class="live-dot">🔴 LIVE</span>`;
                 } else if (!hasResult && !m.isFinished) {
-                    statusBadge = `<span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${m.time || '21:00'} UHR</span>`;
+                    statusBadge = `<span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Ausstehend</span>`;
                 }
 
                 let homeScoreStr = hasResult ? m.homeScore : '-';
                 let awayScoreStr = hasResult ? m.awayScore : '-';
+                let scoreDisplay = hasResult ? `${homeScoreStr}:${awayScoreStr}` : '<span style="color: var(--text-muted); font-weight: normal; font-size: 1rem;">vs</span>';
+                let isBarcaMatch = m.home.toLowerCase().includes('barcelona') || m.away.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça') || m.away.toLowerCase().includes('barça');
 
-                let goalsHtml = '';
+                let homeGoalsHtml = '';
+                let awayGoalsHtml = '';
                 if (m.goals && m.goals.length > 0) {
-                    let items = m.goals.map(g => `<div style="font-size: 0.78rem; color: var(--flag-gold); margin-top: 3px; display: flex; align-items: center; gap: 5px;"><span>⚽</span> <span>${g.text}</span></div>`).join('');
-                    goalsHtml = `
-                        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(44,22,24,0.8); display: flex; flex-direction: column; gap: 2px;">
-                            ${items}
-                        </div>
-                    `;
+                    let homeItems = m.goals.filter(g => g.isHome).map(g => `<div style="font-size: 0.85rem; color: var(--goal-muted); margin-top: 3px; text-align: right;">⚽ [${g.text.split(']')[0].replace('[','')}] ${g.playerName} (${g.minute})</div>`).join('');
+                    let awayItems = m.goals.filter(g => !g.isHome).map(g => `<div style="font-size: 0.85rem; color: var(--goal-muted); margin-top: 3px; text-align: left;">[${g.text.split(']')[0].replace('[','')}] ${g.playerName} (${g.minute}) ⚽</div>`).join('');
+                    if (homeItems) homeGoalsHtml = `<div style="margin-top: 6px;">${homeItems}</div>`;
+                    if (awayItems) awayGoalsHtml = `<div style="margin-top: 6px;">${awayItems}</div>`;
                 }
 
-                let card = document.createElement('div');
-                card.className = "bg-[#12090a] border border-[#2c1618] rounded-2xl p-4 flex flex-col justify-between gap-3 shadow-lg hover:border-[#4a2529] transition";
-                
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${m.date || ''} — ${m.time || ''} UHR</span>
-                        ${statusBadge}
-                    </div>
+                let tr = document.createElement('tr');
+                if (isBarcaMatch) tr.style.background = 'rgba(0, 77, 152, 0.25)';
 
-                    <div class="space-y-2">
-                        <!-- Heimteam -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(22,13,14,0.6); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(44,22,24,0.8);">
-                            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-                                <img src="${m.homeLogo}" class="team-mini-logo" alt="Logo">
-                                <span class="font-bold text-white text-sm truncate" style="color: var(--flag-gold);">${m.home}</span>
-                            </div>
-                            <span style="background: #0c0808; border: 1px solid var(--border-color); color: white; font-weight: 900; padding: 4px 12px; border-radius: 8px; font-size: 1.1rem; min-width: 40px; text-align: center;">
-                                ${homeScoreStr}
-                            </span>
+                tr.innerHTML = `
+                    <td style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap;">
+                        <div>${m.date || ''}</div>
+                        <div style="font-weight: bold; color: #fff;">${m.time || ''} Uhr</div>
+                    </td>
+                    <td>
+                        <div class="team-cell-home">
+                            <span style="color: ${m.home.toLowerCase().includes('barcelona') ? 'var(--barca-gold)' : '#fff'};">${m.home}</span>
+                            <img src="${m.homeLogo}" class="team-mini-logo" alt="Logo">
                         </div>
-
-                        <!-- Gastteam -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(22,13,14,0.6); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(44,22,24,0.8);">
-                            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-                                <img src="${m.awayLogo}" class="team-mini-logo" alt="Logo">
-                                <span class="font-bold text-white text-sm truncate" style="color: #cbd5e1;">${m.away}</span>
-                            </div>
-                            <span style="background: #0c0808; border: 1px solid var(--border-color); color: white; font-weight: 900; padding: 4px 12px; border-radius: 8px; font-size: 1.1rem; min-width: 40px; text-align: center;">
-                                ${awayScoreStr}
-                            </span>
+                        ${homeGoalsHtml}
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="font-weight: 900; font-size: 1.25rem; color: #fff;">${scoreDisplay}</div>
+                        <div style="margin-top: 6px;">${statusBadge}</div>
+                    </td>
+                    <td>
+                        <div class="team-cell-away">
+                            <img src="${m.awayLogo}" class="team-mini-logo" alt="Logo">
+                            <span style="color: ${m.away.toLowerCase().includes('barcelona') ? 'var(--barca-gold)' : '#fff'};">${m.away}</span>
                         </div>
-                    </div>
-                    ${goalsHtml}
+                        ${awayGoalsHtml}
+                    </td>
                 `;
-                container.appendChild(card);
+                tbody.appendChild(tr);
             });
         }
 
@@ -646,8 +824,8 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                const entries = data.children?.[0]?.standings?.entries || data.standings?.entries || [];
-                renderTable(entries, tbody);
+                allStandingsEntries = data.children?.[0]?.standings?.entries || data.standings?.entries || [];
+                renderTable(allStandingsEntries, tbody);
             } catch (error) {
                 console.error("Fehler beim Abrufen der Tabelle:", error);
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #f85149; padding: 30px;">Fehler beim Laden der Tabelle.</td></tr>';
@@ -667,6 +845,8 @@
                 const getStat = (name) => stats.find(s => s.name === name)?.displayValue || "0";
 
                 const rank = idx + 1;
+                const teamName = team?.displayName || 'Unbekannt';
+                const isBarca = teamName.toLowerCase().includes("barcelona");
                 const games = getStat("gamesPlayed");
                 const wins = getStat("wins");
                 const draws = getStat("ties");
@@ -680,11 +860,12 @@
                 if (rank <= 4) tr.classList.add('cl-zone');
                 else if (rank === 5 || rank === 6) tr.classList.add('el-zone');
                 else if (rank >= 18) tr.classList.add('relegation-zone');
+                if (isBarca) tr.classList.add('barca-row');
 
-                let teamCell = `<div class="team-cell"><img src="${team?.logos?.[0]?.href || ''}" class="team-mini-logo" alt="Logo"><span>${team?.displayName || 'Unbekannt'}</span></div>`;
+                let teamCell = `<div class="team-cell-away"><img src="${team?.logos?.[0]?.href || ''}" class="team-mini-logo" alt="Logo"><span>${teamName}</span></div>`;
 
                 tr.innerHTML = `
-                    <td style="font-weight: bold; color: var(--flag-gold);">${rank}.</td>
+                    <td style="font-weight: bold; color: var(--barca-gold);">${rank}.</td>
                     <td>${teamCell}</td>
                     <td style="text-align: center;">${games}</td>
                     <td style="text-align: center;">${wins}</td>
@@ -692,126 +873,250 @@
                     <td style="text-align: center;">${losses}</td>
                     <td style="text-align: center; color: var(--text-muted);">${goalsFor}:${goalsAgainst}</td>
                     <td style="text-align: center; color: ${parseInt(diff) > 0 ? '#3fb950' : (parseInt(diff) < 0 ? '#f85149' : 'inherit')}">${diff}</td>
-                    <td style="text-align: center; font-weight: bold; color: var(--flag-gold);">${points}</td>
+                    <td style="text-align: center; font-weight: bold; color: var(--barca-gold);">${points}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        async function openScorersModal() {
-            let tbody = document.getElementById('scorersModalBody');
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade alle Tore der bisherigen Spieltage...</td></tr>`;
-            document.getElementById('scorersModal').style.display = 'flex';
-
-            let selectedMode = document.getElementById("timeframe-select").value;
-            let maxMw = selectedMode === 'all' ? 38 : (parseInt(selectedMode) || 9);
-
-            let fetchPromises = [];
-            for (let mw = 1; mw <= maxMw; mw++) {
-                if (matchdayDateMap[mw]) {
-                    let dates = matchdayDateMap[mw];
-                    let subPromises = dates.map(dateStr => 
-                        fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${dateStr}`)
-                            .then(res => res.json())
-                            .then(data => data.events || [])
-                            .catch(() => [])
-                    );
-
-                    fetchPromises.push(
-                        Promise.all(subPromises).then(results => {
-                            let events = results.flat();
-                            let matches = [];
-                            events.forEach(ev => {
-                                const comp = ev.competitions?.[0];
-                                if (!comp) return;
-                                const homeComp = comp.competitors.find(c => c.homeAway === 'home');
-                                const awayComp = comp.competitors.find(c => c.homeAway === 'away');
-                                if (!homeComp || !awayComp) return;
-
-                                let goals = [];
-                                if (comp.details && Array.isArray(comp.details)) {
-                                    comp.details.forEach(detail => {
-                                        if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
-                                            let playerName = detail.scorer?.athlete?.displayName 
-                                                || detail.athlete?.displayName 
-                                                || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName)
-                                                || "";
-                                            if (!playerName && detail.text) {
-                                                let cleanText = detail.text.replace(/scored.*\$/, '').trim();
-                                                if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
-                                            }
-                                            if (!playerName) playerName = detail.team?.displayName || "Tor";
-
-                                            let teamName = detail.team?.id === homeComp.team.id ? homeComp.team.displayName : awayComp.team.displayName;
-                                            let teamLogo = detail.team?.logo || (detail.team?.id === homeComp.team.id ? homeComp.team.logo : awayComp.team.logo);
-                                            let clock = detail.clock?.displayValue || "";
-                                            if (clock && !clock.endsWith("'")) clock += "'";
-
-                                            let notes = "";
-                                            if (detail.penalty) notes = " (Pen)";
-                                            if (detail.ownGoal) notes = " (ET)";
-
-                                            goals.push({
-                                                playerName: playerName,
-                                                team: teamName,
-                                                logo: teamLogo,
-                                                info: `${clock}${notes}`
-                                            });
-                                        }
-                                    });
-                                }
-                                matches.push({ goals: goals });
-                            });
-                            return matches;
-                        })
-                    );
-                }
-            }
-
-            let allResults = await Promise.all(fetchPromises);
+        function getScorersArray() {
             let aggregatedScorers = {};
+            for (let mw = 1; mw <= 38; mw++) {
+                let matches = leagueMatches[mw] || [];
+                matches.forEach(m => {
+                    if (m.goals) {
+                        m.goals.forEach(g => {
+                            if (g.playerName && g.playerName.toLowerCase() !== 'tor') {
+                                let name = g.playerName;
+                                let team = g.team;
+                                let logo = g.logo;
 
-            allResults.flat().forEach(m => {
-                if (m.goals) {
-                    m.goals.forEach(g => {
-                        let name = g.playerName;
-                        if (name && name.toLowerCase() !== 'tor') {
-                            if (!aggregatedScorers[name]) {
-                                aggregatedScorers[name] = { count: 0, team: g.team, logo: g.logo, details: [] };
+                                if (!aggregatedScorers[name]) {
+                                    aggregatedScorers[name] = { count: 0, team: team, logo: logo };
+                                }
+                                aggregatedScorers[name].count++;
                             }
-                            aggregatedScorers[name].count++;
-                            if (g.info) aggregatedScorers[name].details.push(g.info);
-                        }
-                    });
-                }
-            });
-
+                        });
+                    }
+                });
+            }
             let scorersArray = Object.keys(aggregatedScorers).map(name => ({
                 name: name,
                 goals: aggregatedScorers[name].count,
                 team: aggregatedScorers[name].team,
-                logo: aggregatedScorers[name].logo,
-                details: aggregatedScorers[name].details
+                logo: aggregatedScorers[name].logo
             }));
+            scorersArray.sort((a, b) => b.goals - a.goals);
+            return scorersArray;
+        }
+
+        function updateTop3ScorersWidget() {
+            let container = document.getElementById('top3-scorers-container');
+            let scorers = getScorersArray().slice(0, 3);
+            
+            if (scorers.length === 0) {
+                container.innerHTML = `<div class="bg-[#12090a] px-3 py-2 rounded-lg border border-[#2c1618] text-slate-400 text-center">Noch keine Daten verfügbar</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            scorers.forEach((s, idx) => {
+                let row = document.createElement('div');
+                row.className = "bg-[#12090a] px-3 py-2 rounded-lg border border-[#2c1618] flex justify-between items-center";
+                let logoHtml = s.logo ? `<img src="${s.logo}" class="team-mini-logo" style="width: 18px; height: 18px;" alt="Logo">` : '';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="font-bold text-[var(--barca-gold)]">${idx + 1}.</span>
+                        <div class="truncate">
+                            <div class="font-bold text-white truncate">${s.name}</div>
+                            <div class="flex items-center gap-1.5 text-[10px] text-slate-400 truncate">${logoHtml}<span class="truncate">${s.team}</span></div>
+                        </div>
+                    </div>
+                    <span class="font-black text-white text-sm ml-2">${s.goals} ⚽</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updateBarcaDashboard() {
+            let barcaEntry = allStandingsEntries.find(e => e.team?.displayName?.toLowerCase().includes("barcelona"));
+            if (barcaEntry) {
+                const stats = barcaEntry.stats || [];
+                const getStat = (name) => stats.find(s => s.name === name)?.displayValue || "0";
+                document.getElementById('stat-games').innerText = getStat("gamesPlayed");
+                document.getElementById('stat-wins').innerText = getStat("wins");
+                document.getElementById('stat-draws').innerText = getStat("ties");
+                document.getElementById('stat-losses').innerText = getStat("losses");
+                document.getElementById('stat-goals').innerText = `${getStat("pointsFor")}:${getStat("pointsAgainst")}`;
+                document.getElementById('stat-points').innerText = getStat("points");
+
+                if (barcaEntry.team?.logos?.[0]?.href) {
+                    let logoUrl = barcaEntry.team.logos[0].href;
+                    document.getElementById('barcaHeaderLogo').src = logoUrl;
+                    document.getElementById('barcaHeaderLogo2').src = logoUrl;
+                }
+            }
+
+            let allBarcaMatches = [];
+            for (let mw = 1; mw <= 38; mw++) {
+                let matches = leagueMatches[mw] || [];
+                matches.forEach(m => {
+                    if (m.home.toLowerCase().includes('barcelona') || m.away.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça') || m.away.toLowerCase().includes('barça')) {
+                        allBarcaMatches.push({ ...m, matchday: mw });
+                    }
+                });
+            }
+            allBarcaMatches.sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
+
+            let now = new Date();
+            let pastMatches = allBarcaMatches.filter(m => new Date(m.dateTime || 0) <= now || m.isFinished);
+            let futureMatches = allBarcaMatches.filter(m => new Date(m.dateTime || 0) > now && !m.isFinished);
+
+            let lastDiv = document.getElementById('last-match-content');
+            if (pastMatches.length > 0) {
+                let last = pastMatches[pastMatches.length - 1];
+                lastDiv.innerHTML = `
+                    <div class="font-bold text-white">ST ${last.matchday} (${last.date})</div>
+                    <div class="text-[var(--barca-gold)] font-semibold mt-1">${last.home} ${last.homeScore}:${last.awayScore} ${last.away}</div>
+                `;
+            } else {
+                lastDiv.innerHTML = "Kein vergangenes Spiel gefunden.";
+            }
+
+            let nextDiv = document.getElementById('next-match-content');
+            if (futureMatches.length > 0) {
+                let next = futureMatches[0];
+                nextDiv.innerHTML = `
+                    <div class="font-bold text-white">ST ${next.matchday} (${next.date} — ${next.time} Uhr)</div>
+                    <div class="text-[var(--barca-gold)] font-semibold mt-1">${next.home} vs. ${next.away}</div>
+                `;
+            } else {
+                nextDiv.innerHTML = "Kein anstehendes Spiel gefunden.";
+            }
+
+            let formContainer = document.getElementById('form-badges-container');
+            formContainer.innerHTML = '';
+            let recentCompleted = pastMatches.slice(-7);
+            if (recentCompleted.length === 0) {
+                formContainer.innerHTML = '<span class="text-xs text-slate-500">Noch keine Spiele absolviert.</span>';
+            } else {
+                recentCompleted.forEach(m => {
+                    let isHome = m.home.toLowerCase().includes('barcelona');
+                    let barcaGoals = isHome ? m.homeScore : m.awayScore;
+                    let oppGoals = isHome ? m.awayScore : m.homeScore;
+                    let badge = document.createElement('div');
+                    if (barcaGoals > oppGoals) {
+                        badge.className = "form-badge form-win";
+                        badge.innerText = "S";
+                    } else if (barcaGoals === oppGoals) {
+                        badge.className = "form-badge form-draw";
+                        badge.innerText = "U";
+                    } else {
+                        badge.className = "form-badge form-loss";
+                        badge.innerText = "N";
+                    }
+                    formContainer.appendChild(badge);
+                });
+            }
+
+            let homeWins = 0, homeDraws = 0, homeLosses = 0, homePts = 0;
+            let awayWins = 0, awayDraws = 0, awayLosses = 0, awayPts = 0;
+            pastMatches.forEach(m => {
+                let isHome = m.home.toLowerCase().includes('barcelona');
+                let barcaGoals = isHome ? m.homeScore : m.awayScore;
+                let oppGoals = isHome ? m.awayScore : m.homeScore;
+                if (barcaGoals !== null && oppGoals !== null) {
+                    if (isHome) {
+                        if (barcaGoals > oppGoals) { homeWins++; homePts += 3; }
+                        else if (barcaGoals === oppGoals) { homeDraws++; homePts += 1; }
+                        else { homeLosses++; }
+                    } else {
+                        if (barcaGoals > oppGoals) { awayWins++; awayPts += 3; }
+                        else if (barcaGoals === oppGoals) { awayDraws++; awayPts += 1; }
+                        else { awayLosses++; }
+                    }
+                }
+            });
+            document.getElementById('home-away-stats').innerHTML = `
+                <div>Heim: ${homeWins}S - ${homeDraws}U - ${homeLosses}N (${homePts} Pkt)</div>
+                <div>Auswärts: ${awayWins}S - ${awayDraws}U - ${awayLosses}N (${awayPts} Pkt)</div>
+            `;
+        }
+
+        // Modal für Alle Barça Spiele öffnen
+        function openBarcaMatchesModal() {
+            let tbody = document.getElementById('barcaMatchesModalBody');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade Barça-Spiele...</td></tr>`;
+            document.getElementById('barcaMatchesModal').style.display = 'flex';
+
+            let allBarcaMatches = [];
+            for (let mw = 1; mw <= 38; mw++) {
+                let matches = leagueMatches[mw] || [];
+                matches.forEach(m => {
+                    if (m.home.toLowerCase().includes('barcelona') || m.away.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça') || m.away.toLowerCase().includes('barça')) {
+                        allBarcaMatches.push({ ...m, matchday: mw });
+                    }
+                });
+            }
+            allBarcaMatches.sort((a, b) => new Date(a.dateTime || 0) - new Date(b.dateTime || 0));
+
+            tbody.innerHTML = '';
+            if (allBarcaMatches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Keine Barça-Spiele gefunden.</td></tr>`;
+                return;
+            }
+
+            allBarcaMatches.forEach(m => {
+                let hasResult = m.homeScore !== null && m.awayScore !== null;
+                let scoreDisplay = hasResult ? `${m.homeScore}:${m.awayScore}` : 'vs';
+                let tr = document.createElement('tr');
+                tr.style.background = 'rgba(0, 77, 152, 0.2)';
+
+                tr.innerHTML = `
+                    <td style="font-weight: bold; color: var(--barca-gold);">ST ${m.matchday}</td>
+                    <td style="font-size: 0.8rem; color: var(--text-muted);">${m.date} ${m.time}</td>
+                    <td style="text-align: right; font-weight: bold; color: ${m.home.toLowerCase().includes('barcelona') ? 'var(--barca-gold)' : '#fff'};">
+                        ${m.home} <img src="${m.homeLogo}" class="team-mini-logo inline-block ml-1" alt="Logo">
+                    </td>
+                    <td style="text-align: center; font-weight: 900; color: #fff;">${scoreDisplay}</td>
+                    <td style="text-align: left; font-weight: bold; color: ${m.away.toLowerCase().includes('barcelona') ? 'var(--barca-gold)' : '#fff'};">
+                        <img src="${m.awayLogo}" class="team-mini-logo inline-block mr-1" alt="Logo"> ${m.away}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function closeBarcaMatchesModal() {
+            document.getElementById('barcaMatchesModal').style.display = 'none';
+        }
+
+        async function openScorersModal() {
+            let tbody = document.getElementById('scorersModalBody');
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Lade gesamte Torschützenliste...</td></tr>`;
+            document.getElementById('scorersModal').style.display = 'flex';
+
+            let scorersArray = getScorersArray();
 
             tbody.innerHTML = '';
             if (scorersArray.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Noch keine Torschützen erfasst.</td></tr>`;
             } else {
-                scorersArray.sort((a, b) => b.goals - a.goals);
                 scorersArray.forEach((s, idx) => {
                     let tr = document.createElement('tr');
-                    let logoHtml = s.logo ? `<img src="${s.logo}" alt="${s.team}" style="width: 16px; height: 16px; object-fit: contain; vertical-align: middle; margin-right: 6px;">` : '';
-                    let detailsHtml = s.details.length > 0 ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Minuten: ${s.details.join(', ')}</div>` : '';
+                    if (s.team && s.team.toLowerCase().includes("barcelona")) tr.classList.add('barca-row');
+                    
+                    let teamCell = `<div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">`;
+                    if (s.logo) teamCell += `<img src="${s.logo}" class="team-mini-logo" alt="Logo">`;
+                    teamCell += `<span style="font-size: 0.75rem; color: var(--text-muted);">${s.team || 'Unbekannt'}</span></div>`;
 
                     tr.innerHTML = `
-                        <td style="text-align: center; font-weight: bold; color: var(--flag-gold);">${idx + 1}.</td>
+                        <td style="text-align: center; font-weight: bold; color: var(--barca-gold);">${idx + 1}.</td>
                         <td>
                             <div style="font-weight: bold; color: #ffffff;">${s.name}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center;">${logoHtml}<span>${s.team}</span></div>
-                            ${detailsHtml}
+                            ${teamCell}
                         </td>
-                        <td style="text-align: center; font-weight: bold; color: var(--flag-gold); font-size: 1.1rem;">${s.goals}</td>
+                        <td style="text-align: center; font-weight: bold; color: var(--barca-gold); font-size: 1.1rem;">${s.goals}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -824,11 +1129,14 @@
 
         window.onclick = function(e) {
             if (e.target === document.getElementById('scorersModal')) closeScorersModal();
+            if (e.target === document.getElementById('barcaMatchesModal')) closeBarcaMatchesModal();
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            loadLaLigaGames();
-            loadStandings();
+        document.addEventListener("DOMContentLoaded", async () => {
+            currentMatchday = determineCurrentMatchday();
+            initDropdown();
+            await loadStandings();
+            await loadAllMatchdays();
         });
     </script>
 </body>
