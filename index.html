@@ -693,6 +693,23 @@
             }
         }
 
+        async function triggerLiveGoalPush(home, away, homeScore, awayScore, goalText) {
+            try {
+                await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        table: 'push_subscriptions_barcelona',
+                        title: `🔴 Barça Tor-Alarm! (${homeScore}:${awayScore})`,
+                        body: `⚽ ${goalText} (${home} vs ${away})`
+                    })
+                });
+            } catch (e) {
+                console.error("Fehler beim automatischen Live-Push:", e);
+            }
+        }
+
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -775,6 +792,10 @@
                         Promise.all(subPromises).then(results => {
                             let events = results.flat();
                             let matches = [], hasLive = false;
+
+                            let liveScoresCache = JSON.parse(localStorage.getItem('barca_live_scores_cache') || '{}');
+                            let newScoresCache = {};
+
                             events.forEach(ev => {
                                 const comp = ev.competitions?.[0];
                                 if (!comp) return;
@@ -792,40 +813,82 @@
 
                                 let goals = [], runningHome = 0, runningAway = 0;
                                 if (comp.details && Array.isArray(comp.details)) {
+                                    // Sortiere Events nach Spielminute/Sekunden für chronologische Reihenfolge
                                     comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
                                     comp.details.forEach(detail => {
-                                        if (detail.type?.text === "Goal" || detail.scoringPlay || detail.goalValue > 0) {
+                                        let textType = detail.type?.text || "";
+                                        let isGoal = textType === "Goal" || detail.scoringPlay || detail.goalValue > 0;
+                                        let isYellow = textType.toLowerCase().includes("yellow");
+                                        let isRed = textType.toLowerCase().includes("red") || textType.toLowerCase().includes("dismissal");
+                                        let isYellowRed = textType.toLowerCase().includes("yellowred") || textType.toLowerCase().includes("second-yellow");
+
+                                        if (isGoal || isYellow || isRed) {
                                             let playerName = detail.scorer?.athlete?.displayName || detail.athlete?.displayName || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName) || "";
                                             if (!playerName && detail.text) {
                                                 let cleanText = detail.text.replace(/scored.*\$/, '').trim();
                                                 if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
                                             }
-                                            const isHomeGoal = (detail.team?.id === homeComp.team.id);
-                                            const isAwayGoal = (detail.team?.id === awayComp.team.id);
-                                            if (isHomeGoal) runningHome++;
-                                            if (isAwayGoal) runningAway++;
-                                            if (!playerName) playerName = isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName;
+                                            const isHomeEvent = (detail.team?.id === homeComp.team.id);
+                                            
+                                            if (isGoal) {
+                                                if (isHomeEvent) runningHome++;
+                                                else runningAway++;
+                                            }
+
+                                            if (!playerName) playerName = isHomeEvent ? homeComp.team.displayName : awayComp.team.displayName;
                                             let clock = detail.clock?.displayValue || "";
                                             if (clock && !clock.endsWith("'")) clock += "'";
+
+                                            let eventType = 'goal';
+                                            let icon = '⚽';
+                                            if (isYellowRed) { eventType = 'yellow-red'; icon = '🟨🟥'; }
+                                            else if (isRed) { eventType = 'red'; icon = '🟥'; }
+                                            else if (isYellow) { eventType = 'yellow'; icon = '🟨'; }
+
                                             goals.push({
-                                                text: `[${runningHome}:${runningAway}] ${playerName} (${clock})`,
-                                                playerName: playerName, team: isHomeGoal ? homeComp.team.displayName : awayComp.team.displayName,
-                                                logo: detail.team?.logo || (isHomeGoal ? homeComp.team.logo : awayComp.team.logo),
-                                                minute: clock, isHome: isHomeGoal
+                                                text: isGoal ? `[${runningHome}:${runningAway}] ${playerName} (${clock})` : `${playerName} (${clock})`,
+                                                playerName: playerName,
+                                                team: isHomeEvent ? homeComp.team.displayName : awayComp.team.displayName,
+                                                logo: detail.team?.logo || (isHomeEvent ? homeComp.team.logo : awayComp.team.logo),
+                                                minute: clock,
+                                                isHome: isHomeEvent,
+                                                type: eventType,
+                                                icon: icon,
+                                                scoreStr: isGoal ? `[${runningHome}:${runningAway}]` : ''
                                             });
                                         }
                                     });
+                                }
+
+                                let homeScoreVal = homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null;
+                                let awayScoreVal = awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null;
+
+                                let isBarcaMatch = homeComp.team.displayName.toLowerCase().includes('barcelona') || awayComp.team.displayName.toLowerCase().includes('barcelona') || homeComp.team.displayName.toLowerCase().includes('barça') || awayComp.team.displayName.toLowerCase().includes('barça');
+                                if (isLive && isBarcaMatch && homeScoreVal !== null && awayScoreVal !== null) {
+                                    let matchKey = ev.id;
+                                    let lastState = liveScoresCache[matchKey];
+                                    if (lastState) {
+                                        if (homeScoreVal > lastState.home || awayScoreVal > lastState.away) {
+                                            let latestGoal = goals.filter(g => g.type === 'goal').pop();
+                                            let goalDesc = latestGoal ? `${latestGoal.playerName} (${latestGoal.minute})` : "Tor!";
+                                            triggerLiveGoalPush(homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, goalDesc);
+                                        }
+                                    }
+                                    newScoresCache[matchKey] = { home: homeScoreVal, away: awayScoreVal };
                                 }
 
                                 matches.push({
                                     home: homeComp.team.displayName, away: awayComp.team.displayName,
                                     homeLogo: homeComp.team.logo || '', awayLogo: awayComp.team.logo || '',
                                     date: dateStr, time: timeStr,
-                                    homeScore: homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null,
-                                    awayScore: awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null,
+                                    homeScore: homeScoreVal,
+                                    awayScore: awayScoreVal,
                                     isFinished: statusType === 'post', isLive: isLive, dateTime: ev.date, goals: goals
                                 });
                             });
+
+                            localStorage.setItem('barca_live_scores_cache', JSON.stringify(newScoresCache));
+
                             let unique = [], seen = new Set();
                             matches.forEach(m => {
                                 let key = `${m.home}-${m.away}-${m.dateTime}`;
@@ -880,8 +943,16 @@
 
                 let homeGoalsHtml = '', awayGoalsHtml = '';
                 if (m.goals && m.goals.length > 0) {
-                    let hItems = m.goals.filter(g => g.isHome).map(g => `<div style="font-size: 0.85rem; color: var(--goal-muted); margin-top: 3px; text-align: right;">⚽ ${g.playerName} (${g.minute})</div>`).join('');
-                    let aItems = m.goals.filter(g => !g.isHome).map(g => `<div style="font-size: 0.85rem; color: var(--goal-muted); margin-top: 3px; text-align: left;">${g.playerName} (${g.minute}) ⚽</div>`).join('');
+                    let hItems = m.goals.filter(g => g.isHome).map(g => {
+                        let prefix = g.scoreStr ? `<span style="color: var(--barca-gold); font-weight: bold;">${g.scoreStr}</span> ` : '';
+                        return `<div style="font-size: 0.82rem; color: var(--goal-muted); margin-top: 3px; text-align: right;">${prefix}${g.icon} ${g.playerName} (${g.minute})</div>`;
+                    }).join('');
+                    
+                    let aItems = m.goals.filter(g => !g.isHome).map(g => {
+                        let suffix = g.scoreStr ? ` <span style="color: var(--barca-gold); font-weight: bold;">${g.scoreStr}</span>` : '';
+                        return `<div style="font-size: 0.82rem; color: var(--goal-muted); margin-top: 3px; text-align: left;">${g.playerName} (${g.minute}) ${g.icon}${suffix}</div>`;
+                    }).join('');
+
                     if (hItems) homeGoalsHtml = `<div style="margin-top: 6px;">${hItems}</div>`;
                     if (aItems) awayGoalsHtml = `<div style="margin-top: 6px;">${aItems}</div>`;
                 }
@@ -944,7 +1015,7 @@
             for (let mw = 1; mw <= 38; mw++) {
                 (leagueMatches[mw] || []).forEach(m => {
                     (m.goals || []).forEach(g => {
-                        if (g.playerName && g.playerName.toLowerCase() !== 'tor') {
+                        if (g.type === 'goal' && g.playerName && g.playerName.toLowerCase() !== 'tor') {
                             if (!aggregated[g.playerName]) aggregated[g.playerName] = { count: 0, team: g.team, logo: g.logo };
                             aggregated[g.playerName].count++;
                         }
@@ -957,7 +1028,7 @@
         function updateTop3ScorersWidget() {
             let container = document.getElementById('top3-scorers-container');
             let scorers = getScorersArray().slice(0, 3);
-            if (scorers.length === 0) { container.innerHTML = `<div class="bg-[#12090a] px-3 py-2 rounded-lg border border-[#2c1618] text-slate-400 text-center">Keine Daten</div>`; return; }
+            if (scorers.length === 0) { container.innerHTML = `<div class="bg-[#12090a] px-3 py-2 rounded-lg border border-[#2c1618] text-slate-400 text-center">Keine Torschützen</div>`; return; }
             container.innerHTML = '';
             scorers.forEach((s, idx) => {
                 let row = document.createElement('div');
@@ -982,6 +1053,7 @@
                     document.getElementById('barcaHeaderLogo2').src = barcaEntry.team.logos[0].href;
                 }
             }
+
             let allBarca = [];
             for (let mw = 1; mw <= 38; mw++) {
                 (leagueMatches[mw] || []).forEach(m => {
@@ -997,6 +1069,29 @@
 
             document.getElementById('last-match-content').innerHTML = past.length > 0 ? `<div class="font-bold text-white">ST ${past[past.length-1].matchday} (${past[past.length-1].date})</div><div class="text-[var(--barca-gold)] font-semibold mt-1">${past[past.length-1].home} ${past[past.length-1].homeScore}:${past[past.length-1].awayScore} ${past[past.length-1].away}</div>` : "Kein Spiel gefunden.";
             document.getElementById('next-match-content').innerHTML = future.length > 0 ? `<div class="font-bold text-white">ST ${future[0].matchday} (${future[0].date} — ${future[0].time} Uhr)</div><div class="text-[var(--barca-gold)] font-semibold mt-1">${future[0].home} vs. ${future[0].away}</div>` : "Kein anstehendes Spiel.";
+
+            let homeP = 0, homeW = 0, homeD = 0, homeL = 0, homePts = 0;
+            let awayP = 0, awayW = 0, awayD = 0, awayL = 0, awayPts = 0;
+            past.forEach(m => {
+                let isHome = m.home.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça');
+                let bG = isHome ? m.homeScore : m.awayScore;
+                let oG = isHome ? m.awayScore : m.homeScore;
+                if (isHome) {
+                    homeP++;
+                    if (bG > oG) { homeW++; homePts += 3; }
+                    else if (bG === oG) { homeD++; homePts += 1; }
+                    else { homeL++; }
+                } else {
+                    awayP++;
+                    if (bG > oG) { awayW++; awayPts += 3; }
+                    else if (bG === oG) { awayD++; awayPts += 1; }
+                    else { awayL++; }
+                }
+            });
+            document.getElementById('home-away-stats').innerHTML = `
+                <div>Heim: ${homeW}S - ${homeD}U - ${homeL}N (${homePts} Pkt)</div>
+                <div>Auswärts: ${awayW}S - ${awayD}U - ${awayL}N (${awayPts} Pkt)</div>
+            `;
 
             let formContainer = document.getElementById('form-badges-container');
             formContainer.innerHTML = '';
