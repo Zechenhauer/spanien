@@ -95,7 +95,6 @@
         }
         .header-action-btn:hover { background: var(--barca-gold); color: #0c0808; }
 
-        /* Ticker-Leiste oben (angepasste Geschwindigkeit: 45s) */
         .ticker-wrapper {
             background: var(--card-inner);
             border: 1px solid var(--border-color);
@@ -129,7 +128,6 @@
             animation-play-state: paused;
         }
 
-        /* Farblicher Badge für Barça-Spiele im Ticker */
         .ticker-barca-match {
             background: rgba(0, 77, 152, 0.4);
             border: 1px solid var(--barca-gold);
@@ -227,7 +225,6 @@
             text-align: left;
         }
 
-        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -325,7 +322,6 @@
                 </div>
             </div>
 
-            <!-- Stats Grid -->
             <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
                 <div class="stat-card">
                     <div class="text-[0.7rem] text-slate-400 uppercase tracking-wider font-semibold">Spiele</div>
@@ -353,7 +349,6 @@
                 </div>
             </div>
 
-            <!-- Formverlauf -->
             <div class="bg-[#12090a] border border-[#2c1618] rounded-xl p-3.5">
                 <div class="text-[0.75rem] text-slate-400 font-bold uppercase tracking-wider mb-2">Formverlauf (letzte Spiele):</div>
                 <div id="form-badges-container" class="flex items-center gap-2 flex-wrap">
@@ -422,7 +417,6 @@
                 </div>
             </div>
 
-            <!-- Spieltags-Navigation -->
             <div class="flex justify-between items-center bg-[#12090a] border border-[#2c1618] rounded-xl p-3 mb-4">
                 <button onclick="changeMatchday(-1)" class="bg-[#160d0e] hover:bg-[#2c1618] text-[var(--barca-gold)] border border-[#2c1618] text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1">
                     ◀ Vorheriger
@@ -438,7 +432,6 @@
                 </button>
             </div>
 
-            <!-- Tabellen-Ansicht für alle Spiele des Spieltags -->
             <div class="table-container custom-scroll">
                 <table>
                     <thead>
@@ -483,7 +476,6 @@
                 </table>
             </div>
 
-            <!-- UNTER DER TABELLE: DISkreter ADMIN-TRIGGER -->
             <div class="mt-4 pt-3 border-t border-[#2c1618] flex justify-end">
                 <button onclick="openAdminModal()" class="bg-[#12090a] hover:bg-[#160d0e] border border-[#edbb00]/40 text-[var(--barca-gold)] font-bold text-xs uppercase px-4 py-2 rounded-lg transition flex items-center gap-2">
                     ⚙️ Admin-Bereich & Push-Test
@@ -507,7 +499,6 @@
                 <button class="btn-danger" onclick="closeAdminModal()">✕</button>
             </div>
             <div class="modal-body custom-scroll">
-                <!-- Login Ansicht -->
                 <div id="adminLoginBox" class="space-y-3">
                     <p class="text-xs text-slate-400">Bitte gib das Admin-Passwort ein, um den Bereich freizuschalten.</p>
                     <div class="flex gap-2">
@@ -516,7 +507,6 @@
                     </div>
                 </div>
 
-                <!-- Admin Konsole (Nach erfolgreichem Login) -->
                 <div id="adminConsoleBox" class="hidden space-y-4">
                     <div class="bg-[#12090a] border border-[#2c1618] p-3 rounded-xl">
                         <div class="text-xs font-bold text-[var(--barca-gold)] uppercase mb-2">🔔 Push-Abo für dieses Gerät</div>
@@ -626,7 +616,6 @@
             document.getElementById('history-fact').innerText = `"${historyFacts[currentFactIdx]}"`;
         }
 
-        // Admin Modal Steuerung
         function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; }
         function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; }
 
@@ -687,7 +676,6 @@
             38: { label: "38. Spieltag (30.05. - 31.05.)", dates: ['20270530', '20270531'] }
         };
 
-        // Service Worker & Push
         async function registerServiceWorker() {
             if ('serviceWorker' in navigator && 'PushManager' in window) {
                 try {
@@ -749,33 +737,35 @@
             }
         }
 
-        // --- INTEGRIERTE DUPLIKATSSPERRE FÜR PUSH-NACHRICHTEN ---
+        // --- PERFEKTE LIVE-TOR-PUSH-LOGIK MIT GOAL_ID ---
         async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
+                const uniqueGoalId = `${matchId}_${homeScore}_${awayScore}`;
+
                 let { data: existing, error: checkError } = await supabaseClient
                     .from('sent_goals_barcelona')
-                    .select('*')
-                    .eq('match_id', matchId)
-                    .eq('home_score', homeScore)
-                    .eq('away_score', awayScore)
+                    .select('goal_id')
+                    .eq('goal_id', uniqueGoalId)
                     .maybeSingle();
 
-                if (existing) return;
+                if (!existing && !checkError) {
+                    let { error: insertError } = await supabaseClient
+                        .from('sent_goals_barcelona')
+                        .insert([{ goal_id: uniqueGoalId, match_id: matchId, home_score: homeScore, away_score: awayScore }]);
 
-                await supabaseClient
-                    .from('sent_goals_barcelona')
-                    .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore }, { onConflict: 'match_id' });
-
-                await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        table: 'push_subscriptions_barcelona',
-                        title: `🔴 Barça Tor-Alarm! (${homeScore}:${awayScore})`,
-                        body: `⚽ ${goalText} (${home} vs ${away})`
-                    })
-                });
+                    if (!insertError) {
+                        await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                table: 'push_subscriptions_barcelona',
+                                title: `🔴 Barça Tor-Alarm! (${homeScore}:${awayScore})`,
+                                body: `⚽ ${goalText} (${home} vs ${away})`
+                            })
+                        });
+                    }
+                }
             } catch (e) {
                 console.error("Fehler beim automatischen Live-Push:", e);
             }
@@ -978,7 +968,6 @@
                 if (res.hasLive) anyLive = true;
             });
 
-            // Ticker oben füllen
             updateTopTicker(anyLive);
 
             if (anyLive) {
@@ -992,7 +981,6 @@
             loadGamesForMatchday(currentMatchday);
         }
 
-        // Ticker-Funktion mit farblicher Markierung für Barcelona im Laufband
         function updateTopTicker(anyLive) {
             let statusIcon = document.getElementById('tickerStatusIcon');
             let tickerTitle = document.getElementById('tickerTitle');
@@ -1003,7 +991,6 @@
                 statusIcon.className = "live-dot";
                 tickerTitle.innerText = "🔴 Live-Spiel:";
                 
-                let liveParts = [];
                 for (let mw = 1; mw <= 38; mw++) {
                     (leagueMatches[mw] || []).filter(m => m.isLive).forEach(m => {
                         let isBarca = m.home.toLowerCase().includes('barcelona') || m.away.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça') || m.away.toLowerCase().includes('barça');
