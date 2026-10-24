@@ -95,6 +95,52 @@
         }
         .header-action-btn:hover { background: var(--barca-gold); color: #0c0808; }
 
+        /* Ticker-Leiste oben (angepasste Geschwindigkeit: 45s) */
+        .ticker-wrapper {
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--barca-gold);
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            font-size: 0.85rem;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .ticker-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 45s linear infinite;
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+
+        .ticker-text:hover {
+            animation-play-state: paused;
+        }
+
+        /* Farblicher Badge für Barça-Spiele im Ticker */
+        .ticker-barca-match {
+            background: rgba(0, 77, 152, 0.4);
+            border: 1px solid var(--barca-gold);
+            color: var(--barca-gold);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 4px;
+        }
+
         .stat-card {
             background: var(--card-inner);
             border: 1px solid var(--border-color);
@@ -241,7 +287,7 @@
     <div class="w-full max-w-[950px]">
         
         <!-- HEADER MIT WAPPEN -->
-        <div class="flex flex-col items-center border-b border-[#2c1618] pb-5 mb-6 text-center gap-2">
+        <div class="flex flex-col items-center border-b border-[#2c1618] pb-4 mb-4 text-center gap-2">
             <div class="flex items-center gap-3">
                 <img id="barcaHeaderLogo" src="https://a.espncdn.com/i/teamlogos/soccer/500/83.png" alt="FC Barcelona" class="w-12 h-12 object-contain drop-shadow">
                 <h1 class="text-2xl md:text-3xl font-black tracking-wide flex items-center gap-2" style="color: var(--barca-gold);">
@@ -250,10 +296,20 @@
                 <img id="barcaHeaderLogo2" src="https://a.espncdn.com/i/teamlogos/soccer/500/83.png" alt="FC Barcelona" class="w-12 h-12 object-contain drop-shadow">
             </div>
             <p class="text-slate-300 text-xs font-semibold">La Liga — Saison 2026/27 (Live-Sync via ESPN)</p>
-            <div class="flex items-center gap-3 mt-1">
+            <div class="flex items-center gap-3 mt-0.5">
                 <span class="text-xs text-slate-400">⚡ Web-App & Management: Jürgen Schützendorf</span>
-                <div id="live-indicator" class="hidden items-center gap-2 bg-red-950 border border-red-700 text-red-300 px-3 py-1 rounded-full text-xs font-bold">
-                    <span class="live-dot"></span> ⚡ ESPN Live-Ticker Aktiv
+            </div>
+        </div>
+
+        <!-- LAUFBAND / TICKER OBEN -->
+        <div class="ticker-wrapper">
+            <div class="flex items-center gap-2 mr-4 shrink-0 z-10 bg-[var(--card-inner)] pr-3 border-r border-[#2c1618]">
+                <span id="tickerStatusIcon" class="live-dot"></span>
+                <span id="tickerTitle" class="font-bold text-[var(--barca-gold)] uppercase text-xs tracking-wider">La Liga Ticker:</span>
+            </div>
+            <div style="overflow: hidden; width: 100%;">
+                <div id="tickerContent" class="ticker-text">
+                    Lade Spielstände und Ergebnisse...
                 </div>
             </div>
         </div>
@@ -693,8 +749,23 @@
             }
         }
 
-        async function triggerLiveGoalPush(home, away, homeScore, awayScore, goalText) {
+        // --- INTEGRIERTE DUPLIKATSSPERRE FÜR PUSH-NACHRICHTEN ---
+        async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
+                let { data: existing, error: checkError } = await supabaseClient
+                    .from('sent_goals_barcelona')
+                    .select('*')
+                    .eq('match_id', matchId)
+                    .eq('home_score', homeScore)
+                    .eq('away_score', awayScore)
+                    .maybeSingle();
+
+                if (existing) return;
+
+                await supabaseClient
+                    .from('sent_goals_barcelona')
+                    .upsert({ match_id: matchId, home_score: homeScore, away_score: awayScore }, { onConflict: 'match_id' });
+
                 await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
                     method: 'POST',
                     mode: 'cors',
@@ -813,7 +884,6 @@
 
                                 let goals = [], runningHome = 0, runningAway = 0;
                                 if (comp.details && Array.isArray(comp.details)) {
-                                    // Sortiere Events nach Spielminute/Sekunden für chronologische Reihenfolge
                                     comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
                                     comp.details.forEach(detail => {
                                         let textType = detail.type?.text || "";
@@ -871,7 +941,7 @@
                                         if (homeScoreVal > lastState.home || awayScoreVal > lastState.away) {
                                             let latestGoal = goals.filter(g => g.type === 'goal').pop();
                                             let goalDesc = latestGoal ? `${latestGoal.playerName} (${latestGoal.minute})` : "Tor!";
-                                            triggerLiveGoalPush(homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, goalDesc);
+                                            triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, goalDesc);
                                         }
                                     }
                                     newScoresCache[matchKey] = { home: homeScoreVal, away: awayScoreVal };
@@ -908,17 +978,82 @@
                 if (res.hasLive) anyLive = true;
             });
 
-            let liveIndicator = document.getElementById('live-indicator');
+            // Ticker oben füllen
+            updateTopTicker(anyLive);
+
             if (anyLive) {
-                liveIndicator.classList.remove('hidden'); liveIndicator.classList.add('flex');
                 if (!autoRefreshTimer) autoRefreshTimer = setInterval(refreshAllData, 15000);
             } else {
-                liveIndicator.classList.add('hidden'); liveIndicator.classList.remove('flex');
+                if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
             }
 
             updateBarcaDashboard();
             updateTop3ScorersWidget();
             loadGamesForMatchday(currentMatchday);
+        }
+
+        // Ticker-Funktion mit farblicher Markierung für Barcelona im Laufband
+        function updateTopTicker(anyLive) {
+            let statusIcon = document.getElementById('tickerStatusIcon');
+            let tickerTitle = document.getElementById('tickerTitle');
+            let tickerContainer = document.getElementById('tickerContent');
+            tickerContainer.innerHTML = "";
+
+            if (anyLive) {
+                statusIcon.className = "live-dot";
+                tickerTitle.innerText = "🔴 Live-Spiel:";
+                
+                let liveParts = [];
+                for (let mw = 1; mw <= 38; mw++) {
+                    (leagueMatches[mw] || []).filter(m => m.isLive).forEach(m => {
+                        let isBarca = m.home.toLowerCase().includes('barcelona') || m.away.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça') || m.away.toLowerCase().includes('barça');
+                        let matchText = `⚡ ${m.home} ${m.homeScore ?? 0}:${m.awayScore ?? 0} ${m.away} ⚡`;
+                        
+                        let span = document.createElement('span');
+                        if (isBarca) {
+                            span.className = "ticker-barca-match";
+                        } else {
+                            span.style.margin = "0 10px";
+                        }
+                        span.innerText = matchText;
+                        tickerContainer.appendChild(span);
+                    });
+                }
+                if (tickerContainer.children.length === 0) {
+                    tickerContainer.innerText = "FC Barcelona im Live-Modus";
+                }
+            } else {
+                statusIcon.className = "inline-block w-2 h-2 rounded-full bg-[var(--barca-gold)]";
+                tickerTitle.innerText = "📋 Letzter Spieltag:";
+                
+                let currentMwMatches = leagueMatches[currentMatchday] || [];
+                if (currentMwMatches.length > 0) {
+                    currentMwMatches.forEach((m, idx) => {
+                        let isBarca = m.home.toLowerCase().includes('barcelona') || m.away.toLowerCase().includes('barcelona') || m.home.toLowerCase().includes('barça') || m.away.toLowerCase().includes('barça');
+                        let score = (m.homeScore !== null && m.awayScore !== null) ? `${m.homeScore}:${m.awayScore}` : `(${m.time || '21:00'} Uhr)`;
+                        let matchText = `${m.home} ${score} ${m.away}`;
+
+                        let span = document.createElement('span');
+                        if (isBarca) {
+                            span.className = "ticker-barca-match";
+                        } else {
+                            span.style.margin = "0 12px";
+                        }
+                        span.innerText = matchText;
+                        tickerContainer.appendChild(span);
+
+                        if (idx < currentMwMatches.length - 1) {
+                            let sep = document.createElement('span');
+                            sep.innerText = "⚽";
+                            sep.style.color = "var(--barca-gold)";
+                            sep.style.margin = "0 8px";
+                            tickerContainer.appendChild(sep);
+                        }
+                    });
+                } else {
+                    tickerContainer.innerText = "FC Barcelona — La Liga Saison 2026/27 — Willkommen in der Web-App!";
+                }
+            }
         }
 
         function loadGamesForMatchday(mw) {
