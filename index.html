@@ -594,6 +594,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxodXN5bHBqbnVqbHFvbW91Z21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMzA0ODIsImV4cCI6MjEwNDYwNjQ4Mn0.9ugazAA5pEdy9uSaJQWa5BMb7EwSH9d-h5K8ln_PF5A';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const SENT_GOALS_TABLE = 'sent_goals_barcelona';
         const VAPID_PUBLIC_KEY = 'BAsnfWgySLti5LzulXfN-xI-x7UDV32LO98YXgg1qdoRY1E1Tl05QPgCvOMgfwe80cSv_K7336-dhJTgBkHUI70';
         const ADMIN_PASSWORD = '1919';
 
@@ -750,49 +751,38 @@
             }
         }
 
-        // --- ANGEPASSTE & KORRIGIERTE LIVE-TOR-PUSH-LOGIK ---
+        // --- ULTRA-ROBUSTER LIVE-TOR-CHECK VIA SUPABASE ---
         async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
-                const uniqueGoalId = `${matchId}_${homeScore}:${awayScore}_${goalText}`;
+                const uniqueGoalId = `esp_${matchId}_${homeScore}:${awayScore}_${goalText}`;
 
-                // 1. Prüfen, ob das Tor bereits existiert
-                let { data: existing, error: checkError } = await supabaseClient
-                    .from('sent_goals_barcelona')
-                    .select('goal_id')
-                    .eq('goal_id', uniqueGoalId)
-                    .maybeSingle();
+                let { error: insertError } = await supabaseClient
+                    .from(SENT_GOALS_TABLE)
+                    .insert([
+                        { 
+                            goal_id: uniqueGoalId,
+                            match_id: `esp_${matchId}`,
+                            home_score: homeScore,
+                            away_score: awayScore
+                        }
+                    ]);
 
-                if (!existing && !checkError) {
-                    // 2. Explizit mit allen Spalten einfügen
-                    let { error: insertError } = await supabaseClient
-                        .from('sent_goals_barcelona')
-                        .insert([
-                            { 
-                                goal_id: uniqueGoalId,
-                                match_id: matchId,
-                                home_score: homeScore,
-                                away_score: awayScore
-                            }
-                        ]);
-
-                    if (!insertError) {
-                        // 3. Push über Edge Function auslösen
-                        await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
-                            method: 'POST',
-                            mode: 'cors',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                table: 'push_subscriptions_barcelona',
-                                title: `⚽ TOR! (${homeScore}:${awayScore})`,
-                                body: `${home} vs ${away}\nTorschütze: ${goalText}`
-                            })
-                        });
-                        console.log("Tor-Push erfolgreich gesendet und in DB gespeichert!");
-                    } else {
-                        console.error("Insert-Fehler:", insertError);
-                    }
+                if (!insertError) {
+                    await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            table: 'push_subscriptions_barcelona',
+                            title: `⚽ TOR! (${homeScore}:${awayScore})`,
+                            body: `${home} vs ${away}\nTorschütze: ${goalText}`
+                        })
+                    });
+                    console.log("Barça Tor-Push erfolgreich gesendet und in DB gespeichert!");
+                } else if (insertError.code === '23505') {
+                    console.log("Dieses Tor existiert bereits in der Datenbank (Duplikat-Schutz).");
                 } else {
-                    console.log("Tor wurde bereits in dieser Session gemeldet.");
+                    console.error("Insert-Fehler in sent_goals_barcelona:", insertError);
                 }
             } catch (e) {
                 console.error("Fehler beim automatischen Live-Push:", e);
@@ -882,9 +872,6 @@
                             let events = results.flat();
                             let matches = [], hasLive = false;
 
-                            let liveScoresCache = JSON.parse(localStorage.getItem('barca_live_scores_cache') || '{}');
-                            let newScoresCache = {};
-
                             events.forEach(ev => {
                                 const comp = ev.competitions?.[0];
                                 if (!comp) return;
@@ -956,15 +943,8 @@
                                 let homeScoreVal = homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null;
                                 let awayScoreVal = awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null;
 
-                                if (isLive && homeScoreVal !== null && awayScoreVal !== null) {
-                                    let matchKey = ev.id;
-                                    let lastState = liveScoresCache[matchKey];
-                                    if (lastState) {
-                                        if (homeScoreVal > lastState.home || awayScoreVal > lastState.away) {
-                                            triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, latestScorerText || "Tor!");
-                                        }
-                                    }
-                                    newScoresCache[matchKey] = { home: homeScoreVal, away: awayScoreVal };
+                                if (isLive && homeScoreVal !== null && awayScoreVal !== null && (homeScoreVal > 0 || awayScoreVal > 0)) {
+                                    triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, latestScorerText || "Tor!");
                                 }
 
                                 matches.push({
@@ -976,8 +956,6 @@
                                     isFinished: statusType === 'post', isLive: isLive, dateTime: ev.date, goals: goals
                                 });
                             });
-
-                            localStorage.setItem('barca_live_scores_cache', JSON.stringify(newScoresCache));
 
                             let unique = [], seen = new Set();
                             matches.forEach(m => {
