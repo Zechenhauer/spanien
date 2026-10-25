@@ -705,10 +705,16 @@
                     });
                 }
 
-                const subJson = subscription.toJSON();
+                const p256dh = subscription.getKey('p256dh') ? btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))) : '';
+                const auth = subscription.getKey('auth') ? btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')))) : '';
+
                 const { error } = await supabaseClient
                     .from('push_subscriptions_barcelona')
-                    .upsert({ endpoint: subJson.endpoint, keys: subJson.keys }, { onConflict: 'endpoint' });
+                    .upsert({ 
+                        endpoint: subscription.endpoint, 
+                        p256dh: p256dh, 
+                        auth: auth 
+                    }, { onConflict: 'endpoint' });
 
                 if (error) throw error;
                 alert('🔔 Push-Benachrichtigungen erfolgreich aktiviert!');
@@ -722,25 +728,30 @@
             const msgText = document.getElementById('adminPushMessage').value;
             if (!msgText) return;
             try {
-                const registration = await navigator.serviceWorker.ready;
-                if (registration && registration.active) {
-                    await registration.showNotification("La Liga Admin-Test", {
-                        body: msgText,
-                        icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23004d98%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>'
-                    });
-                    alert('🚀 Test-Push lokal ausgelöst!');
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        table: 'push_subscriptions_barcelona',
+                        title: "⚽ La Liga Test-Alarm",
+                        body: msgText
+                    })
+                });
+                if (response.ok) {
+                    alert('🚀 Test-Push über Edge Function erfolgreich ausgelöst!');
                 } else {
-                    alert('Service Worker nicht bereit.');
+                    alert('Fehler von der Edge Function.');
                 }
             } catch (err) {
-                alert('Fehler beim Test-Push.');
+                alert('Netzwerkfehler beim Test-Push.');
             }
         }
 
-        // --- ALLEN SPIELEN LIVE-TOR-PUSH-LOGIK (BARÇA-FILTER ENTFERNT) ---
+        // --- ANGEPASSTE LIVE-TOR-PUSH-LOGIK MIT SUPABASE-CACHE ---
         async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
-                const uniqueGoalId = `${matchId}_${homeScore}_${awayScore}`;
+                const uniqueGoalId = `${matchId}_${homeScore}:${awayScore}_${goalText}`;
 
                 let { data: existing, error: checkError } = await supabaseClient
                     .from('sent_goals_barcelona')
@@ -751,7 +762,7 @@
                 if (!existing && !checkError) {
                     let { error: insertError } = await supabaseClient
                         .from('sent_goals_barcelona')
-                        .insert([{ goal_id: uniqueGoalId, match_id: matchId, home_score: homeScore, away_score: awayScore }]);
+                        .insert([{ goal_id: uniqueGoalId }]);
 
                     if (!insertError) {
                         await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
@@ -760,8 +771,8 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 table: 'push_subscriptions_barcelona',
-                                title: `🔴 La Liga Tor-Alarm! (${homeScore}:${awayScore})`,
-                                body: `⚽ ${goalText} (${home} vs ${away})`
+                                title: `⚽ TOR! (${homeScore}:${awayScore})`,
+                                body: `${home} vs ${away}\nTorschütze: ${goalText}`
                             })
                         });
                     }
@@ -873,6 +884,8 @@
                                 let timeStr = !isNaN(matchDateObj.getTime()) ? matchDateObj.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : "21:00";
 
                                 let goals = [], runningHome = 0, runningAway = 0;
+                                let latestScorerText = "";
+
                                 if (comp.details && Array.isArray(comp.details)) {
                                     comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
                                     comp.details.forEach(detail => {
@@ -885,7 +898,7 @@
                                         if (isGoal || isYellow || isRed) {
                                             let playerName = detail.scorer?.athlete?.displayName || detail.athlete?.displayName || (detail.athletesInvolved && detail.athletesInvolved[0]?.displayName) || "";
                                             if (!playerName && detail.text) {
-                                                let cleanText = detail.text.replace(/scored.*\$/, '').trim();
+                                                let cleanText = detail.text.replace(/scored.*$/, '').trim();
                                                 if (cleanText && cleanText.toLowerCase() !== 'goal') playerName = cleanText;
                                             }
                                             const isHomeEvent = (detail.team?.id === homeComp.team.id);
@@ -905,6 +918,9 @@
                                             else if (isRed) { eventType = 'red'; icon = '🟥'; }
                                             else if (isYellow) { eventType = 'yellow'; icon = '🟨'; }
 
+                                            let goalEntry = `${playerName} (${clock})`;
+                                            if (isGoal) latestScorerText = goalEntry;
+
                                             goals.push({
                                                 text: isGoal ? `[${runningHome}:${runningAway}] ${playerName} (${clock})` : `${playerName} (${clock})`,
                                                 playerName: playerName,
@@ -923,15 +939,12 @@
                                 let homeScoreVal = homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null;
                                 let awayScoreVal = awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null;
 
-                                // --- PUSH FÜR JEDES LAUFENDE SPIEL (BARÇA-FILTER ENTFERNT) ---
                                 if (isLive && homeScoreVal !== null && awayScoreVal !== null) {
                                     let matchKey = ev.id;
                                     let lastState = liveScoresCache[matchKey];
                                     if (lastState) {
                                         if (homeScoreVal > lastState.home || awayScoreVal > lastState.away) {
-                                            let latestGoal = goals.filter(g => g.type === 'goal').pop();
-                                            let goalDesc = latestGoal ? `${latestGoal.playerName} (${latestGoal.minute})` : "Tor!";
-                                            triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, goalDesc);
+                                            triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, latestScorerText || "Tor!");
                                         }
                                     }
                                     newScoresCache[matchKey] = { home: homeScoreVal, away: awayScoreVal };
