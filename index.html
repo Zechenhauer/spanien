@@ -517,7 +517,7 @@
 
                     <div class="bg-[#12090a] border border-[#2c1618] p-3 rounded-xl">
                         <div class="text-xs font-bold text-[var(--barca-gold)] uppercase mb-2">🚀 Test-Nachricht senden</div>
-                        <input type="text" id="adminPushMessage" value="⚽ FC Barcelona Test-Alarm: Tooor im Camp Nou!" class="w-full bg-[#160d0e] border border-[#2c1618] rounded-lg px-3 py-2 text-xs text-white mb-2 focus:outline-none focus:border-[var(--barca-gold)]">
+                        <input type="text" id="adminPushMessage" value="⚽ La Liga Test-Alarm: Tooor!" class="w-full bg-[#160d0e] border border-[#2c1618] rounded-lg px-3 py-2 text-xs text-white mb-2 focus:outline-none focus:border-[var(--barca-gold)]">
                         <button onclick="sendAdminTestPush()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs uppercase py-2.5 rounded-lg transition">
                             Test-Push abfeuern
                         </button>
@@ -724,7 +724,7 @@
             try {
                 const registration = await navigator.serviceWorker.ready;
                 if (registration && registration.active) {
-                    await registration.showNotification("FC Barcelona Admin-Test", {
+                    await registration.showNotification("La Liga Admin-Test", {
                         body: msgText,
                         icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23004d98%22/><text x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22>⚽</text></svg>'
                     });
@@ -737,7 +737,7 @@
             }
         }
 
-        // --- PERFEKTE LIVE-TOR-PUSH-LOGIK MIT GOAL_ID ---
+        // --- ALLEN SPIELEN LIVE-TOR-PUSH-LOGIK (BARÇA-FILTER ENTFERNT) ---
         async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
                 const uniqueGoalId = `${matchId}_${homeScore}_${awayScore}`;
@@ -760,7 +760,7 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 table: 'push_subscriptions_barcelona',
-                                title: `🔴 Barça Tor-Alarm! (${homeScore}:${awayScore})`,
+                                title: `🔴 La Liga Tor-Alarm! (${homeScore}:${awayScore})`,
                                 body: `⚽ ${goalText} (${home} vs ${away})`
                             })
                         });
@@ -923,8 +923,8 @@
                                 let homeScoreVal = homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null;
                                 let awayScoreVal = awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null;
 
-                                let isBarcaMatch = homeComp.team.displayName.toLowerCase().includes('barcelona') || awayComp.team.displayName.toLowerCase().includes('barcelona') || homeComp.team.displayName.toLowerCase().includes('barça') || awayComp.team.displayName.toLowerCase().includes('barça');
-                                if (isLive && isBarcaMatch && homeScoreVal !== null && awayScoreVal !== null) {
+                                // --- PUSH FÜR JEDES LAUFENDE SPIEL (BARÇA-FILTER ENTFERNT) ---
+                                if (isLive && homeScoreVal !== null && awayScoreVal !== null) {
                                     let matchKey = ev.id;
                                     let lastState = liveScoresCache[matchKey];
                                     if (lastState) {
@@ -1007,7 +1007,7 @@
                     });
                 }
                 if (tickerContainer.children.length === 0) {
-                    tickerContainer.innerText = "FC Barcelona im Live-Modus";
+                    tickerContainer.innerText = "La Liga im Live-Modus";
                 }
             } else {
                 statusIcon.className = "inline-block w-2 h-2 rounded-full bg-[var(--barca-gold)]";
@@ -1038,7 +1038,7 @@
                         }
                     });
                 } else {
-                    tickerContainer.innerText = "FC Barcelona — La Liga Saison 2026/27 — Willkommen in der Web-App!";
+                    tickerContainer.innerText = "La Liga Saison 2026/27 — Willkommen in der Web-App!";
                 }
             }
         }
