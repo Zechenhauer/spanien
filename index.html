@@ -705,6 +705,7 @@
                     });
                 }
 
+                const subJson = subscription.toJSON();
                 const p256dh = subscription.getKey('p256dh') ? btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))) : '';
                 const auth = subscription.getKey('auth') ? btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')))) : '';
 
@@ -712,6 +713,7 @@
                     .from('push_subscriptions_barcelona')
                     .upsert({ 
                         endpoint: subscription.endpoint, 
+                        keys: subJson.keys,
                         p256dh: p256dh, 
                         auth: auth 
                     }, { onConflict: 'endpoint' });
@@ -748,11 +750,12 @@
             }
         }
 
-        // --- ANGEPASSTE LIVE-TOR-PUSH-LOGIK MIT SUPABASE-CACHE ---
+        // --- ANGEPASSTE & KORRIGIERTE LIVE-TOR-PUSH-LOGIK ---
         async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
                 const uniqueGoalId = `${matchId}_${homeScore}:${awayScore}_${goalText}`;
 
+                // 1. Prüfen, ob das Tor bereits existiert
                 let { data: existing, error: checkError } = await supabaseClient
                     .from('sent_goals_barcelona')
                     .select('goal_id')
@@ -760,11 +763,20 @@
                     .maybeSingle();
 
                 if (!existing && !checkError) {
+                    // 2. Explizit mit allen Spalten einfügen
                     let { error: insertError } = await supabaseClient
                         .from('sent_goals_barcelona')
-                        .insert([{ goal_id: uniqueGoalId }]);
+                        .insert([
+                            { 
+                                goal_id: uniqueGoalId,
+                                match_id: matchId,
+                                home_score: homeScore,
+                                away_score: awayScore
+                            }
+                        ]);
 
                     if (!insertError) {
+                        // 3. Push über Edge Function auslösen
                         await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
                             method: 'POST',
                             mode: 'cors',
@@ -775,7 +787,12 @@
                                 body: `${home} vs ${away}\nTorschütze: ${goalText}`
                             })
                         });
+                        console.log("Tor-Push erfolgreich gesendet und in DB gespeichert!");
+                    } else {
+                        console.error("Insert-Fehler:", insertError);
                     }
+                } else {
+                    console.log("Tor wurde bereits in dieser Session gemeldet.");
                 }
             } catch (e) {
                 console.error("Fehler beim automatischen Live-Push:", e);
