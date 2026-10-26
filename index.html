@@ -751,7 +751,7 @@
             }
         }
 
-        // --- ULTRA-ROBUSTER LIVE-TOR-CHECK VIA SUPABASE ---
+        // --- ROBUSTER TOR-CHECK (LIVE ODER FRISCH BEENDET) ---
         async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
             try {
                 const uniqueGoalId = `esp_${matchId}_${homeScore}:${awayScore}_${goalText}`;
@@ -943,8 +943,10 @@
                                 let homeScoreVal = homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null;
                                 let awayScoreVal = awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null;
 
-                                if (isLive && homeScoreVal !== null && awayScoreVal !== null && (homeScoreVal > 0 || awayScoreVal > 0)) {
-                                    triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, latestScorerText || "Tor!");
+                                // Greift bei Live-Spielen ODER bei frisch beendeten Spielen mit Toren (löst Problem, wenn Spiel direkt auf 'post'springt)
+                                if ((isLive || statusType === 'post') && homeScoreVal !== null && awayScoreVal !== null && (homeScoreVal > 0 || awayScoreVal > 0)) {
+                                    let goalTextToSave = latestScorerText || `Endstand / Zwischenstand ${homeScoreVal}:${awayScoreVal}`;
+                                    triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, goalTextToSave);
                                 }
 
                                 matches.push({
