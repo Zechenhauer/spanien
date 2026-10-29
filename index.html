@@ -594,7 +594,6 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxodXN5bHBqbnVqbHFvbW91Z21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMzA0ODIsImV4cCI6MjEwNDYwNjQ4Mn0.9ugazAA5pEdy9uSaJQWa5BMb7EwSH9d-h5K8ln_PF5A';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const SENT_GOALS_TABLE = 'sent_goals_barcelona';
         const VAPID_PUBLIC_KEY = 'BAsnfWgySLti5LzulXfN-xI-x7UDV32LO98YXgg1qdoRY1E1Tl05QPgCvOMgfwe80cSv_K7336-dhJTgBkHUI70';
         const ADMIN_PASSWORD = '1919';
 
@@ -751,41 +750,40 @@
             }
         }
 
-        // --- ROBUSTER TOR-CHECK (LIVE ODER FRISCH BEENDET) ---
-        async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText) {
+        // --- EXAKT ANGEPASSTE TOR-CHECK FUNKTION (WIE BEI KÖLN) ---
+        async function triggerLiveGoalPush(matchId, home, away, homeScore, awayScore, goalText, scoringTeamName) {
+            if (!goalText || goalText.includes("Tor") || goalText.trim() === "⚽") return;
+
+            const uniqueGoalId = `esp_${matchId}_${goalText}`;
+
             try {
-                const uniqueGoalId = `esp_${matchId}_${homeScore}:${awayScore}_${goalText}`;
+                let { data: existing, error: checkError } = await supabaseClient
+                    .from('sent_goals_barcelona')
+                    .select('goal_id')
+                    .eq('goal_id', uniqueGoalId)
+                    .maybeSingle();
 
-                let { error: insertError } = await supabaseClient
-                    .from(SENT_GOALS_TABLE)
-                    .insert([
-                        { 
-                            goal_id: uniqueGoalId,
-                            match_id: `esp_${matchId}`,
-                            home_score: homeScore,
-                            away_score: awayScore
-                        }
-                    ]);
+                if (!existing && !checkError) {
+                    let { error: insertError } = await supabaseClient
+                        .from('sent_goals_barcelona')
+                        .insert([{ goal_id: uniqueGoalId }]);
 
-                if (!insertError) {
-                    await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
-                        method: 'POST',
-                        mode: 'cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            table: 'push_subscriptions_barcelona',
-                            title: `⚽ TOR! (${homeScore}:${awayScore})`,
-                            body: `${home} vs ${away}\nTorschütze: ${goalText}`
-                        })
-                    });
-                    console.log("Barça Tor-Push erfolgreich gesendet und in DB gespeichert!");
-                } else if (insertError.code === '23505') {
-                    console.log("Dieses Tor existiert bereits in der Datenbank (Duplikat-Schutz).");
-                } else {
-                    console.error("Insert-Fehler in sent_goals_barcelona:", insertError);
+                    if (!insertError) {
+                        await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                table: 'push_subscriptions_barcelona',
+                                title: `Tor für den ${scoringTeamName}`,
+                                body: `Torschütze ${goalText}\nBegegnung: ${home} vs ${away} (${homeScore}:${awayScore})`
+                            })
+                        });
+                        console.log("Barça Tor-Push erfolgreich gesendet!");
+                    }
                 }
             } catch (e) {
-                console.error("Fehler beim automatischen Live-Push:", e);
+                console.error("Fehler beim Tor-Cache:", e);
             }
         }
 
@@ -889,6 +887,7 @@
 
                                 let goals = [], runningHome = 0, runningAway = 0;
                                 let latestScorerText = "";
+                                let scoringTeamName = "";
 
                                 if (comp.details && Array.isArray(comp.details)) {
                                     comp.details.sort((a, b) => (parseInt(a.clock?.secs || 0) - parseInt(b.clock?.secs || 0)));
@@ -923,7 +922,10 @@
                                             else if (isYellow) { eventType = 'yellow'; icon = '🟨'; }
 
                                             let goalEntry = `${playerName} (${clock})`;
-                                            if (isGoal) latestScorerText = goalEntry;
+                                            if (isGoal) {
+                                                latestScorerText = goalEntry;
+                                                scoringTeamName = isHomeEvent ? homeComp.team.displayName : awayComp.team.displayName;
+                                            }
 
                                             goals.push({
                                                 text: isGoal ? `[${runningHome}:${runningAway}] ${playerName} (${clock})` : `${playerName} (${clock})`,
@@ -943,10 +945,8 @@
                                 let homeScoreVal = homeComp.score !== undefined && statusType !== 'pre' ? parseInt(homeComp.score) : null;
                                 let awayScoreVal = awayComp.score !== undefined && statusType !== 'pre' ? parseInt(awayComp.score) : null;
 
-                                // Greift bei Live-Spielen ODER bei frisch beendeten Spielen mit Toren (löst Problem, wenn Spiel direkt auf 'post'springt)
-                                if ((isLive || statusType === 'post') && homeScoreVal !== null && awayScoreVal !== null && (homeScoreVal > 0 || awayScoreVal > 0)) {
-                                    let goalTextToSave = latestScorerText || `Endstand / Zwischenstand ${homeScoreVal}:${awayScoreVal}`;
-                                    triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, goalTextToSave);
+                                if (isLive && homeScoreVal !== null && awayScoreVal !== null && latestScorerText) {
+                                    triggerLiveGoalPush(ev.id, homeComp.team.displayName, awayComp.team.displayName, homeScoreVal, awayScoreVal, latestScorerText, scoringTeamName);
                                 }
 
                                 matches.push({
